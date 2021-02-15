@@ -111,7 +111,30 @@
         padding-top: 24px;
       }
       
+      .screenshotBtnCaption {
+        padding: 2px;
+        border: 1px solid black;
+        display: none;
+      }
+
+      #screenshotBtnDiv {
+        width: 32px;
+        height: 32px;
+        padding: 8px;
+        content: url("./screenshot_icon24x24.png");
+      }
+      
+      #screenshotBtnDiv:hover {
+        cursor: pointer;
+        background-color: whitesmoke;
+      }
+      
+      #screenshotBtnDiv:hover + .screenshotBtnCaption {
+        display: block;
+      }
+      
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
 <script src="https://js.arcgis.com/4.18/"></script>
 
 </head>
@@ -119,7 +142,7 @@
     <div id="viewDiv">
     </div>
     <div id="actions" class="esri-widget">
-      <span class="esri-button" id="dropcsv" ondragover="onDragOver(event)">Please drop a file or files here</span>
+      <span class="esri-button" id="dropcsv" ondragover="onDragOverDropBtn(event)">Please drop a file or files here</span>
       <label class="widgetlabels"><input type="checkbox" id="adddata" style="vertical-align: middle;" onclick="adddataCheck()"> Add data to existing data</label>
       <label class="widgetlabels">File name: <br><span id="displayedfilename"></span></label>
       <label class="widgetlabels">Number of records: <span id="numofrecords"></span></label>
@@ -177,6 +200,10 @@
       <label class="widgetlabels"><span id="messagezone"></span></label>
       <button class="esri-button--tertiary" id="closeActionPanelBtn" onclick="closeActionPanel()">Close Settings</button>
     </div>
+    <div id="legendDiv" class="esri-widget"></div>
+    <div id="attributionDiv" class="esri-widget"></div>
+    <div id="screenshotBtnDiv" class="esri-widget"></div>
+    <div class="screenshotBtnCaption">Screenshot</div>
     <div id="titleDiv" class="esri-widget"><span class="titleString">Japan Mesh Simple Viewer 3D (beta)</span> by <a href="https://www.researchgate.net/profile/Takashi_Kirimura">Takashi Kirimura</a></div>
     <div id="howtouseDiv" class="esri-widget">
     <span class="htuTitle">How to use Japan Mesh Simple Viewer 3D</span>
@@ -225,7 +252,7 @@ var filteringSliderObject;
 var filteringSliderObjectNz;
 var featuresLoaded = 0; // number of loaded features
 
-// メッシュサイズの半分（10進度単位でx,yの順）
+// half of mesh size by decimal degree [x, y]
 var meshSize = { "tertiary": [0.375/60.0, 0.25/60.0],
                  "quaternary": [22.5/7200.0, 15.0/7200.0],
                  "quinary": [11.25/7200.0, 7.5/7200.0],
@@ -239,6 +266,7 @@ require([
   "esri/Graphic",
   "esri/layers/FeatureLayer",
   "esri/widgets/Legend",
+  "esri/widgets/Attribution",
   "esri/symbols/support/symbolUtils",
   "esri/smartMapping/renderers/size",
   "esri/smartMapping/renderers/color",
@@ -262,6 +290,7 @@ require([
   Graphic,
   FeatureLayer,
   Legend,
+  Attribution,
   symbolUtils,
   sizeRendererCreator,
   colorRendererCreator,
@@ -291,7 +320,8 @@ require([
     });
     
     const legend = new Legend({
-      view: view
+      view: view,
+      container: "legendDiv"
     });
     
     var compassWidget = new Compass({
@@ -305,7 +335,8 @@ require([
     
     var bgExpand = new Expand({
       view: view,
-      content: basemapGallery
+      content: basemapGallery,
+      expandTooltip: "Change Basemap"
     });
 
     basemapGallery.watch('activeBasemap', function(event) {
@@ -317,13 +348,24 @@ require([
     var howtouseExpand = new Expand({
       expandIconClass: "esri-icon-question",
       view: view,
-      content: document.getElementById("howtouseDiv")
+      content: document.getElementById("howtouseDiv"),
+      expandTooltip: "How to Use"
     });
 
     var descriptionExpand = new Expand({
       expandIconClass: "esri-icon-description",
       view: view,
-      content: document.getElementById("descriptionDiv")
+      content: document.getElementById("descriptionDiv"),
+      expandTooltip: "About"
+    });
+
+    var screenshotBtn = document.getElementById("screenshotBtnDiv");
+    screenshotBtn.addEventListener("click", compositScreenshotImage);
+
+    // for capture
+    var attributionWidget = new Attribution({
+      view: view,
+      container: "attributionDiv"
     });
     
     view.ui.add("titleDiv", "top-left");
@@ -333,12 +375,13 @@ require([
     view.ui.add(bgExpand, "top-left");
     view.ui.add(descriptionExpand, "top-left");
     view.ui.add(howtouseExpand, "top-left");
+    view.ui.add(screenshotBtn, "top-left");
     view.ui.add(document.getElementById("actions"), "top-right");
     view.ui.add(legend, "bottom-left");
     
     const drawBtn = document.getElementById("meshmap-drawing");
 
-    drawBtn.addEventListener("click", drawFeatures);
+    drawBtn.addEventListener("click", drawFeaturesCheck);
     
     const meshdataLayer = new FeatureLayer({
       title: "Japan Mesh Data",
@@ -493,11 +536,46 @@ require([
 
 
 
-
     
     /*           */
     /* FUNCTIONS */
     /*           */
+    
+    function drawFeaturesCheck() {
+      var fcount = estimateLoadingFeatures();
+      
+      if (fcount >= 50000) {
+        // This viewer cannot draw more than 50,000 features
+        var messDiv = document.getElementById("messagezone");
+        messDiv.style.color = "red";
+        messDiv.innerText = "This viewer cannot draw more than 50,000 features. Please use filter options.";
+        return false;
+      } else if (fcount >= 30000) {
+        // This viewer can draw more than around 30,000 features, but the map may be unstable. Recommend to use filter options.
+        var messDiv = document.getElementById("messagezone");
+        messDiv.style.color = "red";
+        messDiv.innerText = "This viewer can draw more than around 30,000 features, but the map may be unstable. Please use filter options. Continue?";
+        var yesMessBtn = document.createElement("button");
+        yesMessBtn.classList.add("esri-button--tertiary");
+        yesMessBtn.innerText = "<YES>";
+        yesMessBtn.addEventListener("click", function() {
+          messDiv.innerHTML = "";
+          drawFeatures();
+        });
+        messDiv.appendChild(yesMessBtn);
+        var noMessBtn = document.createElement("button");
+        noMessBtn.classList.add("esri-button--tertiary");
+        noMessBtn.innerText = "<NO>";
+        noMessBtn.addEventListener("click", function() {
+          messDiv.innerHTML = "";
+        });
+        messDiv.appendChild(noMessBtn);
+        return false;
+      } else {
+        drawFeatures();
+      }
+    }
+    
     
     function drawFeatures(){
       var rendererCode = document.getElementById("rmethodlist").value;
@@ -617,11 +695,9 @@ require([
       
         applyEditsToLayer(addEdits, rendererCode);
         meshdataPgLayer.legendEnabled = true;
-        
-        //meshdataPgLayer.definitionExpression = "";
-        
         meshdataPgLayer.refresh();
       }
+      document.getElementById("messagezone").style.color = "";
       document.getElementById("messagezone").innerText = featuresLoaded.toString() + " features loaded.";
     }
     
@@ -1205,16 +1281,50 @@ require([
         }
       });
     }
+    
+    function compositScreenshotImage() {
+      view.takeScreenshot().then(function(screenshot) {
+        var imgData1 = screenshot.data;
+        var canvasMainImage = document.createElement("canvas");
+        canvasMainImage.height = imgData1.height;
+        canvasMainImage.width = imgData1.width;
+        var context1 = canvasMainImage.getContext("2d");
+        context1.putImageData(imgData1, 0, 0);
+        
+        html2canvas(document.getElementById("attributionDiv")).then(function(canvas) {
+          context1.drawImage(canvas, 0, canvasMainImage.height - canvas.height, canvas.width, canvas.height);
+          html2canvas(document.getElementById("legendDiv")).then(function(canvas2) {
+            context1.drawImage(canvas2, 0, canvasMainImage.height - canvas2.height - canvas.height, canvas2.width, canvas2.height);
+            var dataUrl = canvasMainImage.toDataURL("image/png");
+            var aElem = document.createElement("a");
+            aElem.href = dataUrl;
+            aElem.style.display = "none";
+            aElem.download = "screenshot";
+            document.body.appendChild(aElem);
+            aElem.click();
+            document.body.removeChild(aElem);
+          });
+        });
+      });
+    }
+    
+    
+    
+    
+    
+    
+    
+    
 });
 
 if (window.File) {
   document.getElementById("dropcsv").addEventListener("drop", onDrop, false);
 } else {
-  alert("ブラウザが対応していないようです.");
+  alert("Please upgrade your browser. This application need File API.");
 }
 
 function loadData() {
-  // rawDataを読み込み、meshDataに入れる
+  // rawData -> meshData
   meshData = [];
   meshcodeFieldNum = document.getElementById("fieldlist1").value;
   valueFieldNum = document.getElementById("fieldlist2").value;
@@ -1232,8 +1342,8 @@ function loadData() {
   
   for (var j=1; j<rawData.length; j++){
     var row = rawData[j].split(/,/);
-    // メッシュコードからの緯度経度の計算
-    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // 8桁以上かつマイナスではない
+    // calculate lat/lon from meshcode
+    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
       var lonx, laty;
       var m1y = parseInt(row[meshcodeFieldNum].substring(0,2),10) / 1.5;
       var m1x = parseInt(row[meshcodeFieldNum].substring(2,4),10) + 100.0;
@@ -1244,11 +1354,11 @@ function loadData() {
       
       lonx = m1x + m2x + m3x;
       laty = m1y + m2y + m3y;
-      if (row[meshcodeFieldNum].length == 8) { // 8ケタ（3次メッシュ）
+      if (row[meshcodeFieldNum].length == 8) { // 8 digits 3ji mesh
         meshType = "tertiary";
         lonx = lonx + meshSize[meshType][0];
         laty = laty + meshSize[meshType][1];
-      } else if (row[meshcodeFieldNum].length == 9) { // 9ケタ（4次メッシュ）
+      } else if (row[meshcodeFieldNum].length == 9) { // 9 digits 4ji mesh
         meshType = "quaternary";
         switch (row[meshcodeFieldNum].substring(8,9)) {
           case "1":
@@ -1268,7 +1378,7 @@ function loadData() {
             laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
             break;
         }
-      } else if (row[meshcodeFieldNum].length == 10) { // 10ケタ（5次メッシュ）
+      } else if (row[meshcodeFieldNum].length == 10) { // 10 digits 5ji mesh
         meshType = "quinary";
         switch (row[meshcodeFieldNum].substring(8,9)) {
           case "1":
@@ -1307,7 +1417,8 @@ function loadData() {
             break;
         }
       }
-      // 6次メッシュ senary データがある？
+      // 11 digits 6jimesh senary (in future)
+      
 
       var meshvalue = parseFloat(row[valueFieldNum]);
       if (nzFieldNum != -1) {
@@ -1480,10 +1591,10 @@ function onDrop(event) {
     
     if (f.name.match(/csv$/m) || f.name.match(/txt$/m)) {
       reader.onload = function (evt) {
-        // ファイル読み込み終了後の処理
+        // file loaded
         document.getElementById("displayedfilename").innerText = f.name;
         var rows = evt.target.result.split(/\n/);
-        var colNames = rows[0].split(/,/); // 列名
+        var colNames = rows[0].split(/,/); // col names
         fieldNames = rows[0].split(/,/);
         fileName = f.name;
         if (addflag.checked) {
@@ -1511,7 +1622,7 @@ function onDrop(event) {
         document.getElementById("numoffields").innerText = colNames.length.toString();
         document.getElementById("estatdata").checked = false;
         
-        // データのタイトルを推測
+        // predict data title
         var titlestr = "";
         if (fileName.match(/_/)) {
           var temparray = fileName.split(/_/);
@@ -1756,7 +1867,7 @@ function estimateLoadingFeatures() {
   return fcount;
 }
 
-function onDragOver(event) {
+function onDragOverDropBtn(event) {
   event.preventDefault();
 }
 
