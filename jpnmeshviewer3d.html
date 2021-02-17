@@ -207,7 +207,7 @@
     <div id="exportDiv" class="esri-widget">
      <label class="widgetlabels">Export data to csv file</label>
      <label class="widgetlabels">1. Select export features by polygon:</label>
-     <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;"></button>
+     <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;">draw polygon</button>
      <label class="widgetlabels">2. Select field option:</label>
       <input type="radio" name="exportFieldSetting" id="exportFieldDisplayed" value="displayed" checked>Displayed fields only
       <input type="radio" name="exportFieldSetting" id="exportFieldAll" value="allfields">All fields
@@ -418,10 +418,10 @@ require([
     view.ui.move("navigation-toggle", "top-left");
     view.ui.move("compass", "top-left");
     view.ui.add(bgExpand, "top-left");
-    view.ui.add(descriptionExpand, "top-left");
-    view.ui.add(howtouseExpand, "top-left");
     view.ui.add(screenshotBtn, "top-left");
     view.ui.add(exportExpand, "top-left");
+    view.ui.add(howtouseExpand, "top-left");
+    view.ui.add(descriptionExpand, "top-left");
     
     view.ui.add(document.getElementById("actions"), "top-right");
     view.ui.add(legend, "bottom-left");
@@ -2129,6 +2129,7 @@ function closeActionPanel() {
   if (btn.innerText == ACTIONPANELCLOSE) {
     panel.style.height = "42px";
     btn.className = "esri-button";
+    btn.style.height = "32px";
     btn.style.marginBottom = "5px";
     panel.style.overflow = "hidden";
     btn.innerText = ACTIONPANELOPEN;
@@ -2138,6 +2139,8 @@ function closeActionPanel() {
     panel.style.overflow = "visible";
     btn.className = "esri-button--tertiary";
     btn.innerText = ACTIONPANELCLOSE;
+    btn.style.marginBottom = "";
+    btn.style.height = "";
     panel.appendChild(btn);
   }
 }
