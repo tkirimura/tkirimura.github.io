@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no" />
+<title>MeshDataView3D</title>
+
+<link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/css/main.css">
+<style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      #dropcsv {
+        line-height: 1.5em;
+        padding: 10px;
+        border: 4px solid red;
+        margin-bottom: 5px;
+        font-size: large
+      }
+      
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+      
+      #actions {
+        padding: 5px;
+        width: 300px;
+      }
+      
+      #displayedfilename {
+        font-weight: bold;
+      }
+      
+      #numofrecords {
+        font-weight: bold;
+      }
+      
+      #numoffields {
+        font-weight: bold;
+      }
+      
+      #meshmap-drawing {
+        margin-top: 10px;
+      }
+      
+      #titleDiv {
+        display: table-cell;
+        vertical-align: middle;
+        padding: 10px;
+      }
+      
+      .titleString {
+        font-weight: bold;
+        font-size: x-large;
+      }
+      
+      .widgetlabels {
+        display: block;
+        margin-top: 5px;
+        margin-bottom: 5px;
+      }
+      
+      #howtouseDiv {
+        width: 300px;
+        height: 400px;
+        padding: 10px;
+        overflow-y: scroll;
+      }
+      .htuTitle {
+        line-height: 1.5em;
+        font-weight: bold;
+      }
+      .htuContents {
+        padding-left: 1em;
+      }
+
+      #descriptionDiv {
+        width: 300px;
+        height: 400px;
+        padding: 10px;
+        overflow-y: scroll;
+      }
+      
+      #colorRampSelector {
+        width: 100%;
+        height: 100px;
+        overflow-y: scroll;
+        padding: 2px;
+        border: 1px solid gray;
+      }
+      #selectedColorRamp {
+        width: 100%;
+        padding: 2px;
+      }
+      
+      #filteringSlider {
+        padding-top: 24px;
+      }
+      
+      #filteringSliderNz {
+        padding-top: 24px;
+      }
+      
+      .screenshotBtnCaption {
+        padding: 2px;
+        border: 1px solid black;
+        display: none;
+      }
+
+      #screenshotBtnDiv {
+        width: 32px;
+        height: 32px;
+        padding: 8px;
+        content: url("./screenshot_icon24x24.png");
+      }
+      
+      #screenshotBtnDiv:hover {
+        cursor: pointer;
+        background-color: whitesmoke;
+      }
+      
+      #exportDiv {
+        padding: 5px;
+        width: 300px;
+      }
+      
+</style>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
+<script src="https://js.arcgis.com/4.18/"></script>
+
+</head>
+<body>
+    <div id="viewDiv">
+    </div>
+    <div id="actions" class="esri-widget">
+      <span class="esri-button" id="dropcsv" ondragover="onDragOverDropBtn(event)">ここにファイルをドロップ</span>
+      <label class="widgetlabels"><input type="checkbox" id="adddata" style="vertical-align: middle;" onclick="adddataCheck()"> データの追加読み込み</label>
+      <label class="widgetlabels">ファイル名: <br><span id="displayedfilename"></span></label>
+      <label class="widgetlabels">レコード数: <span id="numofrecords"></span></label>
+      <label class="widgetlabels">フィールド数: <span id="numoffields"></span></label>
+      <label class="widgetlabels"><input type="checkbox" id="estatdata" style="vertical-align: middle;" onclick="fieldRefresh()"> e-Statデータ</label>
+      <label class="widgetlabels">メッシュコードのフィールド: <br>
+        <select name="meshfield" id="fieldlist1">
+        </select>
+      </label>
+      <label class="widgetlabels">値のフィールド: <br>
+        <select name="valuefield" id="fieldlist2" onchange="clearActionPanelSettings()">
+        </select>
+      </label>
+      <label class="widgetlabels">正規化フィールド (オプション): <br>
+        <select name="nzfield" id="fieldlist3" onchange="clearActionPanelSettingsNz()">
+        </select>
+      </label>
+      <label class="widgetlabels">描画方法: <br>
+        <select name="rmethod" id="rmethodlist" onchange="selectRenderingMethod()">
+          <option value="0">ポイント（大きさ） -- 等間隔</option>
+          <option value="1">ポイント（大きさ） -- 自然分類</option>
+          <option value="2">ポイント（大きさ） -- 等量分類</option>
+          <option value="3">ポイント（大きさ） -- 標準偏差</option>
+          <option value="4">ポイント（色） -- 等間隔</option>
+          <option value="5">ポイント（色）-- 自然分類</option>
+          <option value="6">ポイント（色） -- 等量分類</option>
+          <option value="7">ポイント（色）-- 標準偏差</option>
+          <option value="8">ポリゴン -- 等間隔</option>
+          <option value="9">ポリゴン -- 自然分類</option>
+          <option value="10">ポリゴン -- 等量分類</option>
+          <option value="11">ポリゴン -- 標準偏差</option>
+          <option value="12">3Dポリゴン</option>
+        </select>
+      </label>
+      <label class="widgetlabels" id="colorOptionUI">配色:</label>
+      <div id="selectedColorRamp"></div>
+      <div id="colorRampSelector"></div>
+      <div id="filteringUI">
+      <label class="widgetlabels">
+      <input type="checkbox" id="chkboxFiltering" style="vertical-align: middle;" onclick="checkFilterFlag()">値で絞り込み<br>
+      <button id="calcMinMaxBtn" class="esri-button--secondary" onclick="calculateMinMaxValues()" style="width: 80%; margin-left: 20px;" disabled>最小値・最大値を計算</button></label>
+      </div>
+      <div id="filteringSlider">
+      </div>
+      <div id="filteringNzUI">
+      <label class="widgetlabels">
+      <input type="checkbox" id="chkboxFilteringNz" style="vertical-align: middle;" onclick="checkNzFilterFlag()">正規化フィールドの値で絞り込み<br>
+      <button id="calcNzMinMaxBtn" class="esri-button--secondary" onclick="calculateNzMinMaxValues()" style="width: 80%; margin-left: 20px;" disabled>最小値・最大値を計算</button></label>
+      </div>
+      <div id="filteringSliderNz">
+      </div>
+      <label class="widgetlabels"><span id="estimatefeaturecount"></span></label>
+      <label class="widgetlabels"><span>タイトル: </span><input type="text" class="modifier-class" id="maptitle"></label>
+      <button class="esri-button" id="meshmap-drawing">メッシュマップ描画</button>
+      <label class="widgetlabels"><span id="messagezone"></span></label>
+      <button class="esri-button--tertiary" id="closeActionPanelBtn" onclick="closeActionPanel()"></button>
+    </div>
+    <div id="legendDiv" class="esri-widget"></div>
+    <div id="attributionDiv" class="esri-widget"></div>
+    <div id="screenshotBtnDiv" class="esri-widget"></div>
+    <div id="exportDiv" class="esri-widget">
+     <label class="widgetlabels">表示データのCSVへのエクスポート</label>
+     <label class="widgetlabels">1. ポリゴンを描いて出力するフィーチャを選択します:</label>
+     <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;">ポリゴン描画</button>
+     <label class="widgetlabels">2. 出力するフィールドを選びます:</label>
+      <input type="radio" name="exportFieldSetting" id="exportFieldDisplayed" value="displayed" checked>表示フィールドのみ
+      <input type="radio" name="exportFieldSetting" id="exportFieldAll" value="allfields">全フィールド
+     <label class="widgetlabels">3. エンコーディングを選びます:</label>
+      <input type="radio" name="exportEncodingSetting" id="exportUTF8BOM" value="encutfb" checked>UTF-8 (BOM付き)
+      <input type="radio" name="exportEncodingSetting" id="exportUTF8" value="encutf">UTF-8 (BOMなし)
+     <label class="widgetlabels">4. ファイル名を入力します:</label>
+      <label class="widgetlabels"><input type="text" id="exportFileNameText" style="margin-left: 8px; margin-right: 8px; width: 274px;"></label>
+     <button class="esri-button" id="fileExportBtn">CSVファイル出力</button>
+    </div>
+    <div id="titleDiv" class="esri-widget"><span class="titleString">MeshDataView3D (beta)</span> by <a href="https://www.researchgate.net/profile/Takashi_Kirimura">Takashi Kirimura</a></div>
+    <div id="howtouseDiv" class="esri-widget">
+    <span class="htuTitle">MeshDataView3Dの使い方</span>
+    <span>
+    <ol type="1" class="htuContents">
+    <li>メッシュデータ（txtまたはcsv. 複数ファイル可）を右上の赤枠の<strong>'ここにファイルをドロップ'</strong>にドロップします.<br>
+      <img src="./image_01.png"></li>
+    <li>もし、e-Statからファイルをダウンロードした場合は、<strong>'e-Stat データ'</strong>にチェックします.</li>
+    <li><strong>メッシュコードのフィールド</strong>を選びます.</li>
+    <li><strong>値のフィールド</strong>を選びます.</li>
+    <li>必要に応じて<strong>正規化フィールド</strong>を選びます.</li>
+    <li><strong>描画方法</strong>を選びます. 大きさと色は<strong>ポイント</strong>で描画され、ポリゴンは<strong>ポリゴン</strong>で描画されます. <strong>3Dポリゴン</strong>では、値または正規化フィールドの値をもとに3次元で表示されます.</li>
+    <li>もし、<strong>'色'</strong>または<strong>'ポリゴン'</strong>を描画方法で選んだ場合、<strong>配色</strong>を選ぶことができます.</li>
+    <li>もし、左下の凡例ボックスのタイトルが必要なら、<strong>タイトル</strong>を修正できます.</li>
+    <li><strong>'メッシュマップ描画'</strong>をクリックします.</li>
+    </ol>
+    すでにデータを読み込んでいる場合、<strong>'データの追加読み込み'</strong>にチェックを入れると、ドロップされたデータを既存データに追加できます.
+    </span>
+    </div>
+    <div id="descriptionDiv" class="esri-widget">
+    <span class="htuTitle">MeshDataView3D (beta) v0.05</span><br>
+    <span>
+    このビューワーは、日本のメッシュデータ（3次、4次、5次）を地図化できます. <a href="https://www.e-stat.go.jp/gis" target="_blank">e-Stat</a>や他で作成したメッシュ単位の、カンマ区切りCSV、TXTデータを読み込むことができます.
+    </span>
+    </div>
+<script>
+
+var meshData = [];
+var rawData = [];
+var fileName = "";
+var valueMin = Number.MAX_SAFE_INTEGER;
+var valueMax = Number.MIN_SAFE_INTEGER;
+var nzValueMin = Number.MAX_SAFE_INTEGER;
+var nzValueMax = Number.MIN_SAFE_INTEGER;
+var meshcodeFieldNum = 0;
+var valueFieldNum = 0;
+var nzFieldNum = 0;
+var meshType = "tertiary";
+var fieldNames = [];
+var sSlider,cSlider,cSlider3d;
+var renderer3d;
+var colorRampFlag = false;
+var cScheme;
+var calculatedMinMax = false;
+var filteringSliderObject;
+var filteringSliderObjectNz;
+var featuresLoaded = 0; // number of loaded features
+var exportObjectIds;
+var meshcodeIndex;
+
+const ACTIONPANELOPEN = "描画設定を開く";
+const ACTIONPANELCLOSE = "描画設定を閉じる";
+const MESSAGE_FEATURESWILLBELOADED = " フィーチャが読み込まれます.";
+const MESSAGE_FEATURESLOADED = " フィーチャが読み込まれました.";
+const ALERTNODATA = "データがありません! データを読み込んでください.";
+const FILEAPIERRORMESSAGE = "最新版のブラウザを使ってください. このアプリケーションにはFile APIが必要です.";
+const EXPANDBASEMAP = "背景地図の選択";
+const EXPANDHOWTOUSE = "使い方";
+const EXPANDDESCRIPTION = "このツールについて";
+const EXPANDEXPORT = "CSVエクスポート";
+const CAUTION_OVER50000 = "50,000フィーチャ以上を描画することはできません. 絞り込みオプションを使ってください."
+const CAUTION_OVER30000 = "約30,000以上のフィーチャを描画することはできますが、描画が不安定になります. 絞り込みオプションを使ってください. 続けますか？"
+const CAUTION_OVER30000_YES = "<はい>";
+const CAUTION_OVER30000_NO = "<いいえ>";
+
+
+// half of mesh size by decimal degree [x, y]
+var meshSize = { "tertiary": [0.375/60.0, 0.25/60.0],
+                 "quaternary": [22.5/7200.0, 15.0/7200.0],
+                 "quinary": [11.25/7200.0, 7.5/7200.0],
+                 "senary": [5.625/7200.0, 3.75/7200.0]};
+
+require([
+  "esri/config",
+  "esri/Map",
+  "esri/views/MapView",
+  "esri/views/SceneView",
+  "esri/Graphic",
+  "esri/layers/FeatureLayer",
+  "esri/layers/GraphicsLayer",
+  "esri/widgets/Legend",
+  "esri/widgets/Attribution",
+  "esri/symbols/support/symbolUtils",
+  "esri/smartMapping/renderers/size",
+  "esri/smartMapping/renderers/color",
+  "esri/smartMapping/statistics/histogram",
+  "esri/smartMapping/symbology/support/colorRamps",
+  "esri/smartMapping/symbology/color",
+  "esri/widgets/smartMapping/ClassedSizeSlider",
+  "esri/widgets/smartMapping/ClassedColorSlider",
+  "esri/widgets/smartMapping/ColorSlider",
+  "esri/widgets/BasemapGallery",
+  "esri/widgets/Expand",
+  "esri/widgets/Compass",
+  "esri/widgets/Print",
+  "esri/widgets/ScaleBar",
+  "esri/widgets/Slider",
+  "esri/widgets/Sketch/SketchViewModel",
+  "esri/core/promiseUtils"
+  ], function (
+  esriConfig,
+  Map,
+  MapView,
+  SceneView,
+  Graphic,
+  FeatureLayer,
+  GraphicsLayer,
+  Legend,
+  Attribution,
+  symbolUtils,
+  sizeRendererCreator,
+  colorRendererCreator,
+  histogram,
+  colorRamps,
+  colorSchemes,
+  ClassedSizeSlider,
+  ClassedColorSlider,
+  ColorSlider,
+  BasemapGallery,
+  Expand,
+  Compass,
+  Print,
+  ScaleBar,
+  Slider,
+  SketchViewModel,
+  promiseUtils
+  ) {
+    const map = new Map({
+      basemap: "dark-gray-vector"
+    });
+    
+    const view = new SceneView({
+      map: map,
+      center: [135.5, 34.6],
+      zoom: 10,
+      container: "viewDiv",
+      qualityProfile: "high"
+    });
+    
+    const legend = new Legend({
+      view: view,
+      container: "legendDiv"
+    });
+    
+    var compassWidget = new Compass({
+      view: view
+    });
+    
+    var basemapGallery = new BasemapGallery({
+      view: view,
+      container: document.createElement("div")
+    });
+    
+    var bgExpand = new Expand({
+      view: view,
+      content: basemapGallery,
+      expandTooltip: EXPANDBASEMAP
+    });
+
+    basemapGallery.watch('activeBasemap', function(event) {
+      refreshColorRamps();
+      bgExpand.collapse();
+    });
+    
+
+    var howtouseExpand = new Expand({
+      expandIconClass: "esri-icon-question",
+      view: view,
+      content: document.getElementById("howtouseDiv"),
+      expandTooltip: EXPANDHOWTOUSE
+    });
+
+    var descriptionExpand = new Expand({
+      expandIconClass: "esri-icon-description",
+      view: view,
+      content: document.getElementById("descriptionDiv"),
+      expandTooltip: EXPANDDESCRIPTION
+    });
+
+    var screenshotBtn = document.getElementById("screenshotBtnDiv");
+    screenshotBtn.addEventListener("click", compositScreenshotImage);
+
+    var exportExpand = new Expand({
+      expandIconClass: "esri-icon-save",
+      view: view,
+      content: document.getElementById("exportDiv"),
+      expandTooltip: EXPANDEXPORT
+    });
+    
+    // for capture
+    var attributionWidget = new Attribution({
+      view: view,
+      container: "attributionDiv"
+    });
+    
+    view.ui.add("titleDiv", "top-left");
+    view.ui.move("zoom", "top-left");
+    view.ui.move("navigation-toggle", "top-left");
+    view.ui.move("compass", "top-left");
+    view.ui.add(bgExpand, "top-left");
+    view.ui.add(screenshotBtn, "top-left");
+    view.ui.add(exportExpand, "top-left");
+    view.ui.add(howtouseExpand, "top-left");
+    view.ui.add(descriptionExpand, "top-left");
+    
+    view.ui.add(document.getElementById("actions"), "top-right");
+    view.ui.add(legend, "bottom-left");
+    
+    const drawBtn = document.getElementById("meshmap-drawing");
+
+    drawBtn.addEventListener("click", drawFeaturesCheck);
+    
+    const meshdataLayer = new FeatureLayer({
+      title: "Japan Mesh Data",
+      fields: [
+        {
+          name: "ObjectID",
+          alias: "ObjectID",
+          type: "oid"
+        },
+        {
+          name: "Meshcode",
+          alias: "Meshcode",
+          type: "string"
+        },
+        {
+          name: "Value",
+          alias: "Value",
+          type: "double"
+        },
+        {
+          name: "Nzvalue",
+          alias: "Nzvalue",
+          type: "double"
+        }
+      ],
+      objectIdField: "ObjectID",
+      outFields: ["*"],
+      geometryType: "point",
+      spatialReference: { wkid: 4326 },
+      source: [],
+      renderer: {
+        type: "simple",
+        symbol: {
+          type: "point-3d",
+          styleName: "Esri2DPointSymbolsStyle",
+          name: "circle-1"
+        }
+      },
+      legendEnabled: false,
+      popupTemplate: {
+        title: "Meshcode: {Meshcode}",
+        content: "Value: {Value}<br>Normarization Value: {Nzvalue}"
+      }
+    });
+    map.add(meshdataLayer);
+    
+    meshdataLayer.queryFeatures().then(function(results){
+      if (results.features.length === 0){
+        drawBtn.disabled = false;
+      }
+      else {
+        drawBtn.disabled = true;
+      }
+    });
+
+    const meshdataPgLayer = new FeatureLayer({
+      title: "Japan Mesh Data",
+      fields: [
+        {
+          name: "ObjectID",
+          alias: "ObjectID",
+          type: "oid"
+        },
+        {
+          name: "Meshcode",
+          alias: "Meshcode",
+          type: "string"
+        },
+        {
+          name: "Value",
+          alias: "Value",
+          type: "double"
+        },
+        {
+          name: "Nzvalue",
+          alias: "Nzvalue",
+          type: "double"
+        }
+      ],
+      objectIdField: "ObjectID",
+      outFields: ["*"],
+      geometryType: "polygon",
+      spatialReference: { wkid: 4326 },
+      source: [],
+      renderer: {
+        type: "simple",
+        symbol: {
+          type: "simple-fill"
+        }
+      },
+      legendEnabled: false,
+      opacity: 0.6,
+      popupTemplate: {
+        title: "Meshcode: {Meshcode}",
+        content: "Value: {Value}<br>Normarization Value: {Nzvalue}"
+      }
+    });
+    
+    map.add(meshdataPgLayer);
+    
+    meshdataPgLayer.queryFeatures().then(function(results){
+      if (results.features.length === 0){
+        drawBtn.disabled = false;
+      }
+      else {
+        drawBtn.disabled = true;
+      }
+    });
+    
+    filteringSliderObject = new Slider({
+      container: "filteringSlider",
+      min: 0,
+      max: 100,
+      values: [0, 100],
+      snapOnClickEnabled: false,
+      visibleElements: {
+        labels: true,
+        rangeLabels: true
+      },
+      labelInputsEnabled: true,
+      disabled: true
+    });
+    
+    filteringSliderObject.on(["thumb-change", "thumb-drag"], function() {
+      var estFeaturesCount = estimateLoadingFeatures();
+      var messagespan = document.getElementById("estimatefeaturecount");
+      messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
+    });
+
+    // Slider for normalization value filtering
+    filteringSliderObjectNz = new Slider({
+      container: "filteringSliderNz",
+      min: 0,
+      max: 100,
+      values: [0, 100],
+      snapOnClickEnabled: false,
+      visibleElements: {
+        labels: true,
+        rangeLabels: true
+      },
+      labelInputsEnabled: true,
+      disabled: true
+    });
+    
+    filteringSliderObjectNz.on(["thumb-change", "thumb-drag"], function() {
+      var estFeaturesCount = estimateLoadingFeatures();
+      var messagespan = document.getElementById("estimatefeaturecount");
+      messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
+    });
+    
+    
+    
+    document.getElementById("drawQueryPolygonBtn").addEventListener("click", function() {
+      clearSketchGeometry();
+      sketchViewModel.create("polygon");
+    });
+    
+    document.getElementById("fileExportBtn").addEventListener("click", function() {
+      if (highlightHandle && exportObjectIds.length > 0) {
+        saveMeshData();
+      }
+    });
+    
+    // query feature by graphics
+    let ptLayerView = null;
+    let pgLayerView = null;
+    
+    view.whenLayerView(meshdataLayer).then(function(layerView) {
+      ptLayerView = layerView;
+    });
+    
+    view.whenLayerView(meshdataPgLayer).then(function(layerView) {
+      pgLayerView = layerView;
+    });
+    
+    const sketchLayer = new GraphicsLayer();
+    map.add(sketchLayer);
+    
+    let sketchGeometry = null;
+    const sketchViewModel = new SketchViewModel({
+      layer: sketchLayer,
+      defaultUpdateOptioins: {
+        tool: "reshape",
+        toglleToolOnClick: false
+      },
+      view: view,
+      defaultCreateOptions: { hasZ: false }
+    });
+    
+    sketchViewModel.on("create", function(event) {
+      if (event.state === "complete") {
+        sketchGeometry = event.graphic.geometry;
+        runQuery();
+      }
+    });
+    
+    sketchViewModel.on("update", function(event) {
+      if (event.state === "complete") {
+        sketchGeometry = event.graphics[0].geometry;
+        runQuery();
+      }
+    });
+    
+    function clearSketchGeometry() {
+      sketchGeometry = null;
+      sketchViewModel.cancel();
+      sketchLayer.removeAll();
+      clearHighlighting();
+    }
+    
+    var debouncedRunQuery = promiseUtils.debounce(function() {
+      if (!sketchGeometry) {
+        return;
+      }
+      return promiseUtils.eachAlways([
+        updateScene()
+      ]);
+    });
+    
+    function runQuery() {
+      debouncedRunQuery().catch((error) => {
+        if (error.name === "AbortError") {
+          return;
+        }
+        console.error(error);
+      });
+    }
+    
+    var highlightHandle = null;
+    function clearHighlighting() {
+      if (highlightHandle) {
+        highlightHandle.remove();
+        highlightHandle = null;
+      }
+    }
+    
+    function highlightPolygons(objectIds) {
+      clearHighlighting();
+      exportObjectIds = objectIds;
+      var rendererCode = document.getElementById("rmethodlist").value;
+      if (rendererCode < 8) {
+        const objectIdField = meshdataLayer.objectIdField;
+        highlightHandle = ptLayerView.highlight(objectIds);
+      } else {
+        const objectIdField = meshdataPgLayer.objectIdField;
+        highlightHandle = pgLayerView.highlight(objectIds);
+      }
+    }
+    
+    function updateScene() {
+      var rendererCode = document.getElementById("rmethodlist").value;
+      if (rendererCode < 8) {
+        const query = ptLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        return ptLayerView
+          .queryObjectIds(query)
+          .then(highlightPolygons);
+      } else {
+        const query = pgLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        return pgLayerView
+          .queryObjectIds(query)
+          .then(highlightPolygons);
+      }
+    }
+    
+    function saveMeshData() {
+      var rendererCode = document.getElementById("rmethodlist").value;
+      
+      var exportAllFields = false;
+      if (document.getElementById("exportFieldDisplayed").checked) exportAllFields = false;
+      if (document.getElementById("exportFieldAll").checked) exportAllFields = true;
+      
+      var exportEncoding = "";
+      if (document.getElementById("exportUTF8BOM").checked) exportEncoding = "utf8b";
+      if (document.getElementById("exportUTF8").checked) exportEncoding = "utf8";
+      
+      var exportFileName = document.getElementById("exportFileNameText").value;
+      if (exportFileName == "") exportFileName = "meshdata.csv";
+      if (exportFileName.slice(-4).toLowerCase() != ".csv") exportFileName += ".csv";
+      
+      if (rendererCode < 8) {
+        const query = ptLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        query.returnGeometry = true;
+        query.outFields = ["*"];
+        return ptLayerView.queryFeatures(query).then(function(result) {
+          var exportFeatureCount = result.features.length;
+          var textContents = "";
+          var newLine = "\n";
+          
+          // header
+          if (exportAllFields) {
+            textContents = "MESHCODE,LONGITUDE,LATITUDE";
+            for (var n=0; n<fieldNames.length; n++){
+              textContents += "," + fieldNames[n].trim();
+            }
+            textContents += newLine;
+          } else {
+            var vfieldName = fieldNames[valueFieldNum].trim();
+            textContents = "MESHCODE,LONGITUDE,LATITUDE," + vfieldName;
+            if (nzFieldNum != -1) {
+              var nzfieldName = fieldNames[nzFieldNum].trim();
+              textContents += "," + nzfieldName + newLine;
+            } else {
+              textContents += newLine;
+            }
+          }
+          
+          // contents
+          for (var i=0; i<exportFeatureCount; i++) {
+            var mcode = result.features[i].attributes["Meshcode"];
+            textContents += mcode;
+            var latlon = latlonFromMeshcode(mcode);
+            var lonx = latlon.x
+            var laty = latlon.y;
+            textContents += "," + lonx.toString() + "," + laty.toString();
+            if (exportAllFields) {
+              var idx = meshcodeIndex[mcode];
+              var row = rawData[idx].replace(/\r?\n/g,'');
+              textContents += "," + row + newLine;
+            } else {
+              textContents += "," + isNullConvert(result.features[i].attributes["Value"],"");
+              if (nzFieldNum != -1) {
+                textContents += "," + isNullConvert(result.features[i].attributes["Nzvalue"],"") + newLine;
+              } else {
+                textContents += newLine;
+              }
+            }
+          }
+          
+          var blob;
+          if (exportEncoding == "utf8b") {
+            let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+          } else {
+            blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+          }
+          let downlink = document.createElement("a");
+          clearSketchGeometry();
+          downlink.href = URL.createObjectURL(blob);
+          downlink.download = exportFileName;
+          downlink.click();
+        }, console.error);
+      } else { 
+        const query = pgLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        query.returnGeometry = true;
+        query.outFields = ["*"];
+        return pgLayerView.queryFeatures(query).then(function(result) {
+          var exportFeatureCount = result.features.length;
+          var textContents = "";
+          var newLine = "\n";
+          
+          // header
+          if (exportAllFields) {
+            textContents = "MESHCODE,LONGITUDE,LATITUDE";
+            for (var n=0; n<fieldNames.length; n++){
+              textContents += "," + fieldNames[n].trim();
+            }
+            textContents += newLine;
+          } else {
+            var vfieldName = fieldNames[valueFieldNum].trim();
+            textContents = "MESHCODE,LONGITUDE,LATITUDE," + vfieldName;
+            if (nzFieldNum != -1) {
+              var nzfieldName = fieldNames[nzFieldNum].trim();
+              textContents += "," + nzfieldName + newLine;
+            } else {
+              textContents += newLine;
+            }
+          }
+          
+          // contents
+          for (var i=0; i<exportFeatureCount; i++) {
+            var mcode = result.features[i].attributes["Meshcode"];
+            textContents += mcode;
+            var latlon = latlonFromMeshcode(mcode);
+            var lonx = latlon.x
+            var laty = latlon.y;
+            textContents += "," + lonx.toString() + "," + laty.toString();
+            if (exportAllFields) {
+              var idx = meshcodeIndex[mcode];
+              var row = rawData[idx].replace(/\r?\n/g,'');
+              textContents += "," + row + newLine;
+            } else {
+              textContents += "," + isNullConvert(result.features[i].attributes["Value"],"");
+              if (nzFieldNum != -1) {
+                textContents += "," + isNullConvert(result.features[i].attributes["Nzvalue"],"") + newLine;
+              } else {
+                textContents += newLine;
+              }
+            }
+          }
+          
+          var blob;
+          if (exportEncoding == "utf8b") {
+            let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+          } else {
+            blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+          }
+          let downlink = document.createElement("a");
+          clearSketchGeometry();
+          downlink.href = URL.createObjectURL(blob);
+          downlink.download = exportFileName;
+          downlink.click();
+        }, console.error);
+      }
+    }
+    
+
+    document.getElementById("closeActionPanelBtn").innerText = ACTIONPANELCLOSE;
+    
+    refreshColorRamps();
+    selectRenderingMethod();
+
+
+
+    
+    /*           */
+    /* FUNCTIONS */
+    /*           */
+    
+    function isNullConvert(val1, val2) {
+      return (val1 == null)?val2:val1;
+    }
+    
+    
+    function drawFeaturesCheck() {
+      var fcount = estimateLoadingFeatures();
+      
+      if (fcount >= 50000) {
+        // This viewer cannot draw more than 50,000 features
+        var messDiv = document.getElementById("messagezone");
+        messDiv.style.color = "red";
+        messDiv.innerText = CAUTION_OVER50000;
+        return false;
+      } else if (fcount >= 30000) {
+        // This viewer can draw more than around 30,000 features, but the map may be unstable. Recommend to use filter options.
+        var messDiv = document.getElementById("messagezone");
+        messDiv.style.color = "red";
+        messDiv.innerText = CAUTION_OVER30000;
+        var yesMessBtn = document.createElement("button");
+        yesMessBtn.classList.add("esri-button--tertiary");
+        yesMessBtn.innerText = CAUTION_OVER30000_YES;
+        yesMessBtn.addEventListener("click", function() {
+          messDiv.innerHTML = "";
+          drawFeatures();
+        });
+        messDiv.appendChild(yesMessBtn);
+        var noMessBtn = document.createElement("button");
+        noMessBtn.classList.add("esri-button--tertiary");
+        noMessBtn.innerText = CAUTION_OVER30000_NO;
+        noMessBtn.addEventListener("click", function() {
+          messDiv.innerHTML = "";
+        });
+        messDiv.appendChild(noMessBtn);
+        return false;
+      } else {
+        drawFeatures();
+      }
+    }
+    
+    
+    function drawFeatures(){
+      var rendererCode = document.getElementById("rmethodlist").value;
+      clearSketchGeometry();
+      if (cSlider) {
+        let container1 = document.getElementById("colorSliderDiv");
+        view.ui.remove(container1);
+        cSlider.container = null;
+        cSlider = null;
+        container1 = null;
+      }
+      
+      if (cSlider3d) {
+        let container3 = document.getElementById("colorSlider3dDiv");
+        view.ui.remove(container3);
+        cSlider3d.container = null;
+        cSlider3d = null;
+        container3 = null;
+      }
+
+      if (sSlider) {
+        let container2 = document.getElementById("sizeSliderDiv");
+        view.ui.remove(container2);
+        sSlider.container = null;
+        sSlider = null;
+        container2 = null;
+      }
+
+      removeFeatures(rendererCode);
+      meshdataLayer.legendEnabled = false;
+      meshdataPgLayer.legendEnabled = false;
+      loadData();
+
+      var flagFiltering = document.getElementById("chkboxFiltering");
+      
+      document.getElementById("exportFileNameText").value = document.getElementById("maptitle").value;
+      
+      if (rendererCode < 8) {
+        meshdataLayer.title = document.getElementById("maptitle").value;
+        meshdataLayer.refresh();
+        
+        var vfieldName = fieldNames[valueFieldNum];
+        if (nzFieldNum != -1) {
+          var nzfieldName = fieldNames[nzFieldNum];
+          meshdataLayer.popupTemplate = {
+            title: "MESHCODE: {Meshcode}",
+            content: vfieldName + ": {Value}<br>" + nzfieldName + ": {Nzvalue}"
+          };
+        } else {
+          meshdataLayer.popupTemplate = {
+            title: "MESHCODE: {Meshcode}",
+            content: vfieldName + ": {Value}"
+          };
+        }
+        
+        var graphics = [];
+        var graphic;
+        for (var n=0; n<meshData.length; n++){
+          graphic = new Graphic({
+            geometry: {
+              type: "point",
+              latitude: meshData[n].LATITUDE,
+              longitude: meshData[n].LONGITUDE,
+            },
+            attributes: meshData[n]
+          });
+          graphics.push(graphic);
+        }
+      
+        const addEdits = {
+          addFeatures: graphics
+        };
+      
+        applyEditsToLayer(addEdits, rendererCode);
+        meshdataLayer.legendEnabled = true;
+        meshdataLayer.refresh();
+      } else {
+        meshdataPgLayer.title = document.getElementById("maptitle").value;
+        meshdataPgLayer.refresh();
+      
+        var vfieldName = fieldNames[valueFieldNum];
+        if (nzFieldNum != -1) {
+          var nzfieldName = fieldNames[nzFieldNum];
+          meshdataPgLayer.popupTemplate = {
+            title: "MESHCODE: {Meshcode}",
+            content: vfieldName.trim() + ": {Value}<br>" + nzfieldName.trim() + ": {Nzvalue}"
+          };
+        } else {
+          meshdataPgLayer.popupTemplate = {
+            title: "MESHCODE: {Meshcode}",
+            content: vfieldName.trim() + ": {Value}"
+          };
+        }
+        
+        var graphics = [];
+        var graphic;
+        for (var n=0; n<meshData.length; n++){
+          x1 = meshData[n].LONGITUDE - meshSize[meshType][0];
+          y1 = meshData[n].LATITUDE + meshSize[meshType][1];
+          x2 = meshData[n].LONGITUDE + meshSize[meshType][0];
+          y2 = meshData[n].LATITUDE + meshSize[meshType][1];
+          x3 = meshData[n].LONGITUDE + meshSize[meshType][0];
+          y3 = meshData[n].LATITUDE - meshSize[meshType][1];
+          x4 = meshData[n].LONGITUDE - meshSize[meshType][0];
+          y4 = meshData[n].LATITUDE - meshSize[meshType][1];
+          graphic = new Graphic({
+            geometry: {
+              type: "polygon",
+              rings: [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]
+            },
+            attributes: meshData[n]
+          });
+          graphics.push(graphic);
+        }
+      
+        const addEdits = {
+          addFeatures: graphics
+        };
+      
+        applyEditsToLayer(addEdits, rendererCode);
+        meshdataPgLayer.legendEnabled = true;
+        meshdataPgLayer.refresh();
+      }
+      document.getElementById("messagezone").style.color = "";
+      document.getElementById("messagezone").innerText = featuresLoaded.toString() + MESSAGE_FEATURESLOADED;
+    }
+    
+    function removeFeatures(renderer){
+      meshdataLayer.definitionExpression = '';
+      meshdataLayer.queryFeatures().then(function(results){
+        const deleteEdits = {
+          deleteFeatures: results.features
+        };
+        applyEditsToLayer(deleteEdits, 0);
+      });
+      meshdataPgLayer.definitionExpression = '';
+      meshdataPgLayer.queryFeatures().then(function(results){
+        const deleteEdits = {
+          deleteFeatures: results.features
+        };
+        applyEditsToLayer(deleteEdits, 8);
+      });
+    }
+    
+    function applyEditsToLayer(edits, renderercode) {
+      if (renderercode < 8) {
+        meshdataLayer
+          .applyEdits(edits)
+          .then(function(results) {
+            if (results.addFeatureResults.length > 0){
+              var objectIds = [];
+              results.addFeatureResults.forEach(function(item) {
+                objectIds.push(item.objectId);
+              });
+              meshdataLayer
+                .queryFeatures({
+                  objectIds: objectIds
+                });
+            
+              var sizeParams = selectRenderer(renderercode);
+              let rendererResult = null;
+            
+              if (renderercode < 4) { // size
+                sizeRendererCreator
+                  .createClassBreaksRenderer(sizeParams)
+                  .then(function(response) {
+                    rendererResult = response;
+                    meshdataLayer.renderer = response.renderer;
+                    updateSizeSlider(rendererResult, sizeParams);
+                  })
+                  .catch(function(error) {
+                    console.log(error);
+                  });
+              } else { // color
+                colorRendererCreator
+                  .createClassBreaksRenderer(sizeParams)
+                  .then(function(response) {
+                    rendererResult = response;
+                    meshdataLayer.renderer = response.renderer;
+                    updateColorSlider(rendererResult, sizeParams);
+                  })
+                  .catch(function(error) {
+                    console.log(error);
+                  });
+              }
+            
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      } else if (renderercode == 12) {
+        // 3D extrude
+        meshdataPgLayer
+          .applyEdits(edits)
+          .then(function(results) {
+            if (results.addFeatureResults.length > 0){
+              var objectIds = [];
+              results.addFeatureResults.forEach(function(item) {
+                objectIds.push(item.objectId);
+              });
+              meshdataPgLayer
+                .queryFeatures({
+                  objectIds: objectIds
+                });
+            
+              var sizeParams = selectRenderer(renderercode);
+              let rendererResult = null;
+              
+              colorRendererCreator.createContinuousRenderer(sizeParams)
+                .then(function(response) {
+                  rendererResult = response;
+                  var vVar = rendererResult.visualVariable;
+                  
+                  var vfieldName = fieldNames[valueFieldNum];
+                  if (nzFieldNum != -1){
+                    // size => normalizationField max min
+                    var nzfieldName = fieldNames[nzFieldNum];
+                    renderer3d = {
+                      type: "simple",
+                      symbol: { type: "polygon-3d", symbolLayers: [{ type: "extrude" }]},
+                      visualVariables: [
+                        {
+                          type: "size",
+                          field: "Nzvalue",
+                          legendOptions: { title: nzfieldName.trim() },
+                          stops: [
+                            {
+                              value: nzValueMin,
+                              size: 1,
+                              label: nzValueMin.toString()
+                            },
+                            {
+                              value: nzValueMax,
+                              size: 5000,
+                              label: nzValueMax.toString()
+                            }
+                          ]
+                        },
+                        {
+                          type: "color",
+                          field: "Value",
+                          normalizationField: "Nzvalue",
+                          legendOptions: { title: vfieldName.trim() + " / " + nzfieldName.trim() },
+                          stops: [
+                            {
+                              value: vVar.stops[0].value,
+                              color: vVar.stops[0].color,
+                              label: vVar.stops[0].label
+                            },
+                            {
+                              value: vVar.stops[4].value,
+                              color: vVar.stops[4].color,
+                              label: vVar.stops[4].label
+                            }
+                          ]
+                        }
+                      ]
+                    };
+                  } else {
+                    // size => valuefield value
+                    renderer3d = {
+                      type: "simple",
+                      symbol: { type: "polygon-3d", symbolLayers: [{ type: "extrude" }]},
+                      visualVariables: [
+                        {
+                          type: "size",
+                          field: "Value",
+                          legendOptions: { title: vfieldName.trim() },
+                          stops: [
+                            {
+                              value: valueMin,
+                              size: 1,
+                              label: valueMin.toString()
+                            },
+                            {
+                              value: valueMax,
+                              size: 5000,
+                              label: valueMax.toString()
+                            }
+                          ]
+                        },
+                        {
+                          type: "color",
+                          field: "Value",
+                          normalizationField: null,
+                          legendOptions: { title: vfieldName.trim() },
+                          stops: [
+                            {
+                              value: vVar.stops[0].value,
+                              color: vVar.stops[0].color,
+                              label: vVar.stops[0].label
+                            },
+                            {
+                              value: vVar.stops[4].value,
+                              color: vVar.stops[4].color,
+                              label: vVar.stops[4].label
+                            }
+                          ]
+                        }
+                      ]
+                    };
+                  }
+                  meshdataPgLayer.renderer = renderer3d;
+                  updateColorSlider3d(rendererResult, sizeParams);
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+
+      } else {
+        meshdataPgLayer
+          .applyEdits(edits)
+          .then(function(results) {
+            if (results.addFeatureResults.length > 0){
+              var objectIds = [];
+              results.addFeatureResults.forEach(function(item) {
+                objectIds.push(item.objectId);
+              });
+              meshdataPgLayer
+                .queryFeatures({
+                  objectIds: objectIds
+                });
+            
+              var sizeParams = selectRenderer(renderercode);
+              let rendererResult = null;
+              
+              colorRendererCreator
+                .createClassBreaksRenderer(sizeParams)
+                .then(function(response) {
+                  rendererResult = response;
+                  meshdataPgLayer.renderer = response.renderer;
+                  updateColorSlider(rendererResult, sizeParams);
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+            
+            }
+          })
+          .catch(function(error) {
+            console.log(error);
+          });
+      }
+    }
+    
+    function selectRenderer(renderercode) {
+      var params = {};
+      var vfieldName = fieldNames[valueFieldNum];
+      switch (renderercode) {
+        case "0": // size equal-interval
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true,
+          };
+          break;
+        case "1": // size natural-breaks
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "natural-breaks",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "2": // size quantile
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "quantile",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "3": // size standard-deviation
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "standard-deviation",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "4": // color equal-interval
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true,
+          };
+          break;
+        case "5": // color natural-breaks
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "natural-breaks",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "6": // color quantile
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "quantile",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "7": // color standard-deviation
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "standard-deviation",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "8": // polygon equal-interval
+          params = {
+            layer: meshdataPgLayer,
+            view: view,
+            field: "Value",
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true,
+          };
+          break;
+        case "9": // polygon natural-breaks
+          params = {
+            layer: meshdataPgLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "natural-breaks",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "10": // polygon quantile
+          params = {
+            layer: meshdataPgLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "quantile",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "11": // polygon standard-deviation
+          params = {
+            layer: meshdataPgLayer,
+            view: view,
+            field: "Value",
+            classificationMethod: "standard-deviation",
+            numClasses: 5,
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true
+          };
+          break;
+        case "12": // polygon extrude
+          params = {
+            layer: meshdataPgLayer,
+            view: view,
+            field: "Value",
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            outlineOptimizationEnabled: true,
+          };
+          break;
+        default: // same as 0
+          params = {
+            layer: meshdataLayer,
+            view: view,
+            valueExpression: "$feature.VALUE",
+            legendOptions: {
+              title: vfieldName.trim(),
+            },
+            minValue: valueMin,
+            maxValue: valueMax,
+            outlineOptimizationEnabled: true,
+            sizeOptimizationEnabled: false
+          };
+          break;
+      }
+      if (nzFieldNum != -1) {
+        var nzfieldName = fieldNames[nzFieldNum];
+        params["normalizationField"] = "Nzvalue";
+        params["legendOptions"]["title"] = vfieldName.trim() + " / " + nzfieldName.trim();
+      }
+      
+      
+      if (cScheme) {
+        if (renderercode < 8) {
+          params["colorScheme"] = colorSchemes.getSchemeByName({
+            basemap: map.basemap,
+            geometryType: "point",
+            theme: "high-to-low",
+            name: cScheme
+          });
+        } else {
+          params["colorScheme"] = colorSchemes.getSchemeByName({
+            basemap: map.basemap,
+            geometryType: "polygon",
+            theme: "high-to-low",
+            name: cScheme
+          });
+        }
+      }
+      return params;
+    }
+    
+    function updateSizeSlider(rendererResult, params) {
+      histogram({
+        layer: params.layer,
+        field: params.field,
+        normalizationField: params.normalizationField,
+        view: view,
+        numBins: 100
+      }).then(function(histogramResult) {
+        if(!sSlider){
+          const sliderContainer = document.createElement("div");
+          const container = document.createElement("div");
+          container.id = "sizeSliderDiv";
+          container.width = "300px";
+          container.appendChild(sliderContainer);
+          view.ui.add(container, "top-right");
+          
+          sSlider = ClassedSizeSlider.fromRendererResult(rendererResult, histogramResult);
+          sSlider.container = container;
+          sSlider.viewModel.precision = 2;
+          
+          function changeEventHandler(){
+            const renderer = params.layer.renderer.clone();
+            renderer.classBreakInfos = sSlider.updateClassBreakInfos(renderer.classBreakInfos);
+            params.layer.renderer = renderer;
+          }
+          
+          sSlider.on(["thumb-change", "thumb-drag", "min-change", "max-change"], 
+            changeEventHandler);
+        } else {
+          sSlider.updateFromRendererResult(rendererResult, histogramResult);
+        }
+      });
+    }
+    
+    function updateColorSlider(rendererResult, params) {
+      histogram({
+        layer: params.layer,
+        field: params.field,
+        normalizationField: params.normalizationField,
+        view: view,
+        numBins: 100
+      }).then(function(histogramResult) {
+        if(!cSlider){
+          const sliderContainer = document.createElement("div");
+          const container = document.createElement("div");
+          container.id = "colorSliderDiv";
+          container.width = "300px";
+          container.appendChild(sliderContainer);
+          view.ui.add(container, "top-right");
+          
+          cSlider = ClassedColorSlider.fromRendererResult(rendererResult, histogramResult);
+          cSlider.container = container;
+          cSlider.viewModel.precision = 2;
+          
+          function changeEventHandler(){
+            const renderer = params.layer.renderer.clone();
+            renderer.classBreakInfos = cSlider.updateClassBreakInfos(renderer.classBreakInfos);
+            params.layer.renderer = renderer;
+          }
+          
+          cSlider.on(["thumb-change", "thumb-drag", "min-change", "max-change"], 
+            changeEventHandler);
+        } else {
+          cSlider.updateFromRendererResult(rendererResult, histogramResult);
+        }
+      });
+    }
+    
+    function updateColorSlider3d(rendererResult, params) {
+      histogram({
+        layer: params.layer,
+        field: params.field,
+        normalizationField: params.normalizationField,
+        view: view,
+        numBins: 100
+      }).then(function(histogramResult) {
+        if(!cSlider3d){
+          const sliderContainer = document.createElement("div");
+          const container = document.createElement("div");
+          container.id = "colorSlider3dDiv";
+          container.width = "300px";
+          container.appendChild(sliderContainer);
+          view.ui.add(container, "top-right");
+          
+          cSlider3d = ColorSlider.fromRendererResult(rendererResult, histogramResult);
+          cSlider3d.container = container;
+          cSlider3d.viewModel.precision = 2;
+          
+          cSlider3d.on(["thumb-change", "thumb-drag"], function() {
+            const renderer = params.layer.renderer.clone();
+            const colorVariable = renderer.visualVariables[1].clone();
+            renderer.visualVariables[1].stops[0] = cSlider3d.stops[0];
+            renderer.visualVariables[1].stops[1] = cSlider3d.stops[4];
+            params.layer.renderer = renderer;
+            
+          });
+          cSlider3d.on(["min-change", "max-change"], function() {
+            var cSlider3dMax = cSlider3d.max;
+            var cSlider3dMin = cSlider3d.min;
+            if (nzFieldNum != -1){
+              params.layer.definitionExpression = "(Value / Nzvalue) >= " + cSlider3dMin.toString() + " AND (Value / Nzvalue) <= " + cSlider3dMax.toString();
+            } else {
+              params.layer.definitionExpression = "Value >= " + cSlider3dMin.toString() + " AND Value <= " + cSlider3dMax.toString();
+            }
+            const renderer = params.layer.renderer.clone();
+            const colorVariable = renderer.visualVariables[1].clone();
+            renderer.visualVariables[1].stops[0] = cSlider3d.stops[0];
+            renderer.visualVariables[1].stops[1] = cSlider3d.stops[4];
+            params.layer.renderer = renderer;
+            params.layer.refresh();
+          });
+        } else {
+          cSlider3d.updateFromRendererResult(rendererResult, histogramResult);
+        }
+      });
+    }
+
+    function refreshColorRamps() {
+      var cRampDiv = document.getElementById("colorRampSelector");
+      document.getElementById("selectedColorRamp").innerHTML = '';
+      cRampDiv.innerHTML = '';
+      cScheme = null;
+      const cRamps = colorRamps.byTag({ includedTags: ["sequential", "colorblind-friendly"]});
+      cRamps.forEach( ramp => {
+        var cSchemeCheck = colorSchemes.getSchemeByName({
+          geometryType: "point",
+          theme: "high-to-low",
+          basemap: map.basemap,
+          name: ramp.name
+        });
+        if (cSchemeCheck != null) {
+          const colorRampHTML = symbolUtils.renderColorRampPreviewHTML(ramp.colors, { align: "horizontal", width: 266, height: 16 });
+          colorRampHTML.setAttribute("style", "height: 16px; margin-top: 1px;");
+          colorRampHTML.onclick = function() {
+            cScheme = ramp.name;
+            var canvas0 = this.getElementsByTagName("canvas")[0];
+            var canvas1 = document.createElement("canvas");
+            canvas1.width = canvas0.width;
+            canvas1.height = canvas0.height;
+            var context0 = canvas0.getContext('2d');
+            var image0 = context0.getImageData(0, 0, canvas0.width, canvas0.height);
+            canvas1.getContext('2d').putImageData(image0, 0, 0);
+            document.getElementById("selectedColorRamp").innerHTML = '';
+            document.getElementById("selectedColorRamp").appendChild(canvas1);
+          };
+          cRampDiv.appendChild(colorRampHTML);
+        }
+      });
+    }
+    
+    function compositScreenshotImage() {
+      view.takeScreenshot().then(function(screenshot) {
+        var imgData1 = screenshot.data;
+        var canvasMainImage = document.createElement("canvas");
+        canvasMainImage.height = imgData1.height;
+        canvasMainImage.width = imgData1.width;
+        var context1 = canvasMainImage.getContext("2d");
+        context1.putImageData(imgData1, 0, 0);
+        
+        html2canvas(document.getElementById("attributionDiv")).then(function(canvas) {
+          context1.drawImage(canvas, 0, canvasMainImage.height - canvas.height, canvas.width, canvas.height);
+          html2canvas(document.getElementById("legendDiv")).then(function(canvas2) {
+            context1.drawImage(canvas2, 0, canvasMainImage.height - canvas2.height - canvas.height, canvas2.width, canvas2.height);
+            var dataUrl = canvasMainImage.toDataURL("image/png");
+            var aElem = document.createElement("a");
+            aElem.href = dataUrl;
+            aElem.style.display = "none";
+            aElem.download = "screenshot";
+            document.body.appendChild(aElem);
+            aElem.click();
+            document.body.removeChild(aElem);
+          });
+        });
+      });
+    }
+    
+    
+});
+
+
+
+
+if (window.File) {
+  document.getElementById("dropcsv").addEventListener("drop", onDrop, false);
+} else {
+  alert(FILEAPIERRORMESSAGE);
+}
+
+function loadData() {
+  // rawData -> meshData
+  meshData = [];
+  meshcodeIndex = new Array();
+  meshcodeFieldNum = document.getElementById("fieldlist1").value;
+  valueFieldNum = document.getElementById("fieldlist2").value;
+  valueMin = Number.MAX_SAFE_INTEGER;
+  valueMax = Number.MIN_SAFE_INTEGER;
+  nzValueMin = Number.MAX_SAFE_INTEGER;
+  nzValueMax = Number.MIN_SAFE_INTEGER;
+  
+  nzFieldNum = document.getElementById("fieldlist3").value;
+
+  var flagFiltering = document.getElementById("chkboxFiltering");
+  var flagFilteringNz = document.getElementById("chkboxFilteringNz");
+  
+  var fcount = 0;
+  
+  for (var j=1; j<rawData.length; j++){
+    var row = rawData[j].split(/,/);
+    // calculate lat/lon from meshcode
+    
+    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
+      var latlon = latlonFromMeshcode(row[meshcodeFieldNum]);
+      var lonx, laty;
+      lonx = latlon.x;
+      laty = latlon.y;
+      meshcodeIndex[row[meshcodeFieldNum]] = j;
+
+      var meshvalue = parseFloat(row[valueFieldNum]);
+      if (nzFieldNum != -1) {
+        var nzvalue = parseFloat(row[nzFieldNum]);
+        if (flagFiltering && filteringSliderObject.disabled == false && 
+            flagFilteringNz && filteringSliderObjectNz.disabled == false) {
+          if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1]) &&
+              filteringCheck(nzvalue, filteringSliderObjectNz.values[0], filteringSliderObjectNz.values[1])) {
+            meshData.push({
+                    LATITUDE: laty,
+                    LONGITUDE: lonx,
+                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    VALUE: meshvalue,
+                    NZVALUE: nzvalue
+            });
+            if (nzValueMin > nzvalue) nzValueMin = nzvalue;
+            if (nzValueMax < nzvalue) nzValueMax = nzvalue;
+            if (valueMin > meshvalue) valueMin = meshvalue;
+            if (valueMax < meshvalue) valueMax = meshvalue;
+            fcount++;
+          }
+        } else if (flagFiltering && filteringSliderObject.disabled == false) {
+          if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1])) {
+            meshData.push({
+                    LATITUDE: laty,
+                    LONGITUDE: lonx,
+                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    VALUE: meshvalue,
+                    NZVALUE: nzvalue
+            });
+            if (nzValueMin > nzvalue) nzValueMin = nzvalue;
+            if (nzValueMax < nzvalue) nzValueMax = nzvalue;
+            if (valueMin > meshvalue) valueMin = meshvalue;
+            if (valueMax < meshvalue) valueMax = meshvalue;
+            fcount++;
+          }
+        } else {
+          meshData.push({
+                  LATITUDE: laty,
+                  LONGITUDE: lonx,
+                  MESHCODE: row[meshcodeFieldNum].toString(),
+                  VALUE: meshvalue,
+                  NZVALUE: nzvalue
+          });
+          if (nzValueMin > nzvalue) nzValueMin = nzvalue;
+          if (nzValueMax < nzvalue) nzValueMax = nzvalue;
+          if (valueMin > meshvalue) valueMin = meshvalue;
+          if (valueMax < meshvalue) valueMax = meshvalue;
+          fcount++;
+        }
+      } else {
+        if (flagFiltering && filteringSliderObject.disabled == false) {
+          if (filteringCheck(meshvalue, filteringSliderObject.values[0], filteringSliderObject.values[1])) {
+            meshData.push({
+                    LATITUDE: laty,
+                    LONGITUDE: lonx,
+                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    VALUE: meshvalue,
+                    NZVALUE: 0
+            });
+            if (valueMin > meshvalue) valueMin = meshvalue;
+            if (valueMax < meshvalue) valueMax = meshvalue;
+            fcount++;
+          }
+        } else {
+          meshData.push({
+                  LATITUDE: laty,
+                  LONGITUDE: lonx,
+                  MESHCODE: row[meshcodeFieldNum].toString(),
+                  VALUE: meshvalue,
+                  NZVALUE: 0
+          });
+          if (valueMin > meshvalue) valueMin = meshvalue;
+          if (valueMax < meshvalue) valueMax = meshvalue;
+          fcount++;
+        }
+      }
+      featuresLoaded = fcount;
+    }
+  }
+}
+
+function filteringCheck(value, min, max) {
+  if (value >= min && value <= max) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function filteringCheckNZ(value, nzvalue, min, max) {
+  if (nzvalue != 0) {
+    if (value / nzvalue >= min && value / nzvalue <= max) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+
+function fieldRefresh() {
+  if (rawData.length > 0) {
+    var estatflag = document.getElementById("estatdata");
+    var colnameRow = 0;
+    if (estatflag.checked) {
+      // field name in 2nd row
+      colnameRow = 1;
+    } else {
+      // field name in 1st row
+      colnameRow = 0;
+    }
+
+    let fieldList1 = document.getElementById("fieldlist1");
+    let fieldList2 = document.getElementById("fieldlist2");
+    let fieldList3 = document.getElementById("fieldlist3");
+  
+    while (fieldList1.firstChild){ fieldList1.removeChild(fieldList1.firstChild); }
+    while (fieldList2.firstChild){ fieldList2.removeChild(fieldList2.firstChild); }
+    while (fieldList3.firstChild){ fieldList3.removeChild(fieldList3.firstChild); }
+  
+    let nulloption = document.createElement('option');
+    nulloption.setAttribute('value', -1);
+    nulloption.innerHTML = "----";
+    fieldList3.appendChild(nulloption);
+    var colNames = rawData[colnameRow].split(/,/);
+    fieldNames = rawData[colnameRow].split(/,/);
+    for (var k=0; k<colNames.length; k++) {
+      if (colNames[k] == "") {
+        colNames[k] = rawData[0].split(/,/)[k];
+        fieldNames[k] = colNames[k];
+      }
+      let option1 = document.createElement('option');
+      option1.setAttribute('value', k);
+      option1.innerHTML = colNames[k].substr(0,18);
+      fieldList1.appendChild(option1);
+      let option2 = document.createElement('option');
+      option2.setAttribute('value', k);
+      option2.innerHTML = colNames[k].substr(0,18);
+      fieldList2.appendChild(option2);
+      let option3 = document.createElement('option');
+      option3.setAttribute('value', k);
+      option3.innerHTML = colNames[k].substr(0,18);
+      fieldList3.appendChild(option3);
+    }
+
+    // set default field
+    meshcodeFieldNum = 0;
+    valueFieldNum = 1;
+    nzFieldNum = 0; // -1 means not selected
+  
+    fieldList1.options[meshcodeFieldNum].selected = true;
+    fieldList2.options[valueFieldNum].selected = true;
+    fieldList3.options[nzFieldNum].selected = true;
+  }
+}
+
+function onDrop(event) {
+  var files = event.dataTransfer.files;
+  var addflag = document.getElementById("adddata");
+  
+  event.preventDefault();
+  if (!addflag.checked) {
+    rawData = [];
+  }
+  clearActionPanelSettings();
+  clearActionPanelSettingsNz();
+  
+  for (var i=0; i<files.length; i++){
+    var f = files[i];
+    var reader = new FileReader();
+    
+    if (f.name.match(/csv$/m) || f.name.match(/txt$/m)) {
+      reader.onload = function (evt) {
+        // file loaded
+        document.getElementById("displayedfilename").innerText = f.name;
+        var rows = evt.target.result.split(/\n/);
+        var colNames = rows[0].split(/,/); // col names
+        fieldNames = rows[0].split(/,/);
+        fileName = f.name;
+        if (addflag.checked) {
+          var rawDataRow0 = rawData[0];
+          var colCount = rawDataRow0.split(/,/).length;
+          if (colCount == colNames.length) {
+            var addData = evt.target.result.split(/\n/);
+            rawData = rawData.concat(addData);
+          } else {
+            rawData = evt.target.result.split(/\n/);
+          }
+        } else if (files.length > 1 && rawData.length != 0) {
+          var rawDataRow0 = rawData[0];
+          var colCount = rawDataRow0.split(/,/).length;
+          if (colCount == colNames.length) {
+            var addData = evt.target.result.split(/\n/);
+            rawData = rawData.concat(addData);
+          } else {
+            rawData = evt.target.result.split(/\n/);
+          }
+        } else {
+          rawData = evt.target.result.split(/\n/);
+        }
+        document.getElementById("numofrecords").innerText = rawData.length.toString();
+        document.getElementById("numoffields").innerText = colNames.length.toString();
+        document.getElementById("estatdata").checked = false;
+        
+        // predict data title
+        var titlestr = "";
+        if (fileName.match(/_/)) {
+          var temparray = fileName.split(/_/);
+          for (var m=0; m<temparray.length; m++){
+            if (temparray[m].length != encodeURI(temparray[m]).replace(/%../g,"x").length) {
+              titlestr = temparray[m];
+              break;
+            }
+          }
+        }
+        
+        if (titlestr == "") titlestr = fileName.substr(0, 10);
+        document.getElementById("maptitle").value = titlestr;
+        
+        let fieldList1 = document.getElementById("fieldlist1");
+        let fieldList2 = document.getElementById("fieldlist2");
+        let fieldList3 = document.getElementById("fieldlist3");
+        
+        while (fieldList1.firstChild){ fieldList1.removeChild(fieldList1.firstChild); }
+        while (fieldList2.firstChild){ fieldList2.removeChild(fieldList2.firstChild); }
+        while (fieldList3.firstChild){ fieldList3.removeChild(fieldList3.firstChild); }
+        
+        let nulloption = document.createElement('option');
+        nulloption.setAttribute('value', -1);
+        nulloption.innerHTML = "----";
+        fieldList3.appendChild(nulloption);
+        
+        for (var k=0; k<colNames.length; k++) {
+          let option1 = document.createElement('option');
+          option1.setAttribute('value', k);
+          option1.innerHTML = colNames[k].substr(0,16);
+          fieldList1.appendChild(option1);
+          let option2 = document.createElement('option');
+          option2.setAttribute('value', k);
+          option2.innerHTML = colNames[k].substr(0,16);
+          fieldList2.appendChild(option2);
+          let option3 = document.createElement('option');
+          option3.setAttribute('value', k);
+          option3.innerHTML = colNames[k].substr(0,16);
+          fieldList3.appendChild(option3);
+        }
+        
+        // set default field
+        meshcodeFieldNum = 0;
+        valueFieldNum = 1;
+        nzFieldNum = 0; // -1 means not selected
+        
+        fieldList1.options[meshcodeFieldNum].selected = true;
+        fieldList2.options[valueFieldNum].selected = true;
+        fieldList3.options[nzFieldNum].selected = true;
+        
+      }
+      reader.readAsText(f, 'sjis');
+    }
+    
+  }
+  event.preventDefault();
+}
+
+function adddataCheck() {
+  var addflag0 = document.getElementById("adddata");
+  if (addflag0.checked) {
+    if (rawData.length == 0) {
+      addflag0.checked = false;
+    }
+  }
+}
+
+function selectRenderingMethod() {
+  var rendererCode = document.getElementById("rmethodlist").value;
+  if (rendererCode >= 4) { // color and polygon
+    document.getElementById("colorOptionUI").style.display = "block";
+    document.getElementById("selectedColorRamp").style.display = "block";
+    document.getElementById("colorRampSelector").style.display = "block";
+  } else {
+    document.getElementById("colorOptionUI").style.display = "none";
+    document.getElementById("selectedColorRamp").style.display = "none";
+    document.getElementById("colorRampSelector").style.display = "none";
+  }
+}
+
+function checkFilterFlag() {
+  var flag = document.getElementById("chkboxFiltering");
+  if (flag.checked) {
+    document.getElementById("calcMinMaxBtn").disabled = false;
+    if (calculatedMinMax) {
+      filteringSliderObject.disabled = false;
+      filteringSliderObject.min = valueMin;
+      filteringSliderObject.max = valueMax;
+      filteringSliderObject.values = [valueMin, valueMax];
+    }
+  } else {
+    document.getElementById("calcMinMaxBtn").disabled = true;
+    filteringSliderObject.disabled = true;
+    var messagespan = document.getElementById("estimatefeaturecount");
+    messagespan.innerText = "";
+  }
+}
+
+function checkNzFilterFlag() {
+  var flag = document.getElementById("chkboxFilteringNz");
+  nzFieldNum = document.getElementById("fieldlist3").value;
+  if (flag.checked) {
+    if (nzFieldNum == -1) {
+      flag.checked = false;
+    } else {
+      document.getElementById("calcNzMinMaxBtn").disabled = false;
+      if (calculatedMinMax) {
+        filteringSliderObjectNz.disabled = false;
+        filteringSliderObjectNz.min = valueMin;
+        filteringSliderObjectNz.max = valueMax;
+        filteringSliderObjectNz.values = [valueMin, valueMax];
+      }
+    }
+  } else {
+    document.getElementById("calcNzMinMaxBtn").disabled = true;
+    filteringSliderObjectNz.disabled = true;
+    var messagespan = document.getElementById("estimatefeaturecount");
+    messagespan.innerText = "";
+  }
+}
+
+
+function calculateMinMaxValues() {
+  // calculate min and max values for filtering Slider
+  if (rawData.length > 0) {
+    // calculate
+    valueFieldNum = document.getElementById("fieldlist2").value;
+    valueMin = Number.MAX_SAFE_INTEGER;
+    valueMax = Number.MIN_SAFE_INTEGER;
+    var normalizedValueMin = Number.MAX_VALUE;
+    var normalizedValueMax = Number.MIN_VALUE;
+    nzFieldNum = document.getElementById("fieldlist3").value;
+  
+    for (var j=1; j<rawData.length; j++){
+      var row = rawData[j].split(/,/);
+      var meshvalue = parseFloat(row[valueFieldNum]);
+      if (nzFieldNum != -1) {
+        var nzvalue = parseFloat(row[nzFieldNum]);
+        if (nzvalue > 0) {
+          var normalizeValue = meshvalue / nzvalue;
+          if (normalizedValueMin > normalizeValue) normalizedValueMin = normalizeValue;
+          if (normalizedValueMax < normalizeValue) normalizedValueMax = normalizeValue;
+        }
+      }
+      if (valueMin > meshvalue) valueMin = meshvalue;
+      if (valueMax < meshvalue) valueMax = meshvalue;
+    }
+    
+    filteringSliderObject.disabled = false;
+    if (nzFieldNum != -1){
+      filteringSliderObject.min = normalizedValueMin;
+      filteringSliderObject.max = normalizedValueMax;
+      filteringSliderObject.values = [normalizedValueMin, normalizedValueMax];
+    } else {
+      filteringSliderObject.min = valueMin;
+      filteringSliderObject.max = valueMax;
+      filteringSliderObject.values = [valueMin, valueMax];
+    }
+    var estFeaturesCount = estimateLoadingFeatures();
+    var messagespan = document.getElementById("estimatefeaturecount");
+    messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
+  } else {
+    alert(ALERTNODATA);
+  }
+}
+
+function calculateNzMinMaxValues() {
+  // calculate min and max normalization values for filtering Slider
+  if (rawData.length > 0 && nzFieldNum != -1) {
+    // calculate
+    valueFieldNum = document.getElementById("fieldlist2").value;
+    valueMin = Number.MAX_SAFE_INTEGER;
+    valueMax = Number.MIN_SAFE_INTEGER;
+
+    nzValueMin = Number.MAX_SAFE_INTEGER;
+    nzValueMax = Number.MIN_SAFE_INTEGER;
+
+    nzFieldNum = document.getElementById("fieldlist3").value;
+  
+    for (var j=1; j<rawData.length; j++){
+      var row = rawData[j].split(/,/);
+      var nzvalue = parseFloat(row[nzFieldNum]);
+      if (nzvalue > 0) {
+        if (nzValueMin > nzvalue) nzValueMin = nzvalue;
+        if (nzValueMax < nzvalue) nzValueMax = nzvalue;
+      }
+    }
+    
+    filteringSliderObjectNz.disabled = false;
+    filteringSliderObjectNz.min = nzValueMin;
+    filteringSliderObjectNz.max = nzValueMax;
+    filteringSliderObjectNz.values = [nzValueMin, nzValueMax];
+    var estFeaturesCount = estimateLoadingFeatures();
+    var messagespan = document.getElementById("estimatefeaturecount");
+    messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
+  } else {
+    alert(ALERTNODATA);
+  }
+}
+
+
+
+function estimateLoadingFeatures() {
+  var fcount = 0;
+  meshcodeFieldNum = document.getElementById("fieldlist1").value;
+  valueFieldNum = document.getElementById("fieldlist2").value;
+  nzFieldNum = document.getElementById("fieldlist3").value;
+  var flagFiltering = document.getElementById("chkboxFiltering");
+  var flagFilteringNz = document.getElementById("chkboxFilteringNz");
+  
+  for (var j=1; j<rawData.length; j++){
+    var row = rawData[j].split(/,/);
+    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
+      var meshvalue = parseFloat(row[valueFieldNum]);
+      if (nzFieldNum != -1) {
+        var nzvalue = parseFloat(row[nzFieldNum]);
+        if (flagFiltering && filteringSliderObject.disabled == false && 
+            flagFilteringNz && filteringSliderObjectNz.disabled == false) {
+          if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1]) &&
+              filteringCheck(nzvalue, filteringSliderObjectNz.values[0], filteringSliderObjectNz.values[1])) {
+            fcount++;
+          }
+        } else if (flagFiltering && filteringSliderObject.disabled == false) {
+          if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1])) {
+            fcount++;
+          }
+        } else {
+          fcount++;
+        }
+      } else {
+        if (flagFiltering && filteringSliderObject.disabled == false) {
+          if (filteringCheck(meshvalue, filteringSliderObject.values[0], filteringSliderObject.values[1])) {
+            fcount++;
+          }
+        } else {
+          fcount++;
+        }
+      }
+    }
+  }
+  return fcount;
+}
+
+function onDragOverDropBtn(event) {
+  event.preventDefault();
+}
+
+function closeActionPanel() {
+  var btn = document.getElementById("closeActionPanelBtn");
+  var panel = document.getElementById("actions");
+  var topelem = document.getElementById("dropcsv");
+  if (btn.innerText == ACTIONPANELCLOSE) {
+    panel.style.height = "42px";
+    btn.className = "esri-button";
+    btn.style.height = "32px";
+    btn.style.marginBottom = "5px";
+    panel.style.overflow = "hidden";
+    btn.innerText = ACTIONPANELOPEN;
+    panel.insertBefore(btn, topelem);
+  } else if (btn.innerText == ACTIONPANELOPEN) {
+    panel.style.height = "";
+    panel.style.overflow = "visible";
+    btn.className = "esri-button--tertiary";
+    btn.innerText = ACTIONPANELCLOSE;
+    btn.style.marginBottom = "";
+    btn.style.height = "";
+    panel.appendChild(btn);
+  }
+}
+
+function clearActionPanelSettings() {
+  var flag = document.getElementById("chkboxFiltering");
+  flag.checked = false;
+  checkFilterFlag();
+}
+
+function clearActionPanelSettingsNz() {
+  var flag = document.getElementById("chkboxFiltering");
+  flag.checked = false;
+  checkFilterFlag();
+  var flagNz = document.getElementById("chkboxFilteringNz");
+  flagNz.checked = false;
+  checkNzFilterFlag();
+}
+
+function latlonFromMeshcode(meshcodestr) {
+  if (meshcodestr.length >= 8 && parseInt(meshcodestr, 10) > 0) { // more than 8 digits and non-negative
+    var lonx, laty;
+    var m1y = parseInt(meshcodestr.substring(0,2),10) / 1.5;
+    var m1x = parseInt(meshcodestr.substring(2,4),10) + 100.0;
+    var m2y = parseInt(meshcodestr.substring(4,5),10) * (5.0/60.0);
+    var m2x = parseInt(meshcodestr.substring(5,6),10) * (7.5/60.0);
+    var m3y = parseInt(meshcodestr.substring(6,7),10) * (0.5/60.0);
+    var m3x = parseInt(meshcodestr.substring(7,8),10) * (0.75/60.0);
+    
+    lonx = m1x + m2x + m3x;
+    laty = m1y + m2y + m3y;
+    if (meshcodestr.length == 8) { // 8 digits 3ji mesh
+      meshType = "tertiary";
+      lonx = lonx + meshSize[meshType][0];
+      laty = laty + meshSize[meshType][1];
+    } else if (meshcodestr.length == 9) { // 9 digits 4ji mesh
+      meshType = "quaternary";
+      switch (meshcodestr.substring(8,9)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+    } else if (meshcodestr.length == 10) { // 10 digits 5ji mesh
+      meshType = "quinary";
+      switch (meshcodestr.substring(8,9)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+      switch (meshcodestr.substring(9,10)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+    }
+    // 11 digits 6jimesh senary (in future)
+  }
+  var returnVal = { "x": lonx, "y": laty };
+  return returnVal;
+}
+
+
+
+</script>
+  </body>
+</html>
