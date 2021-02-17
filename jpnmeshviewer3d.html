@@ -129,8 +129,9 @@
         background-color: whitesmoke;
       }
       
-      #screenshotBtnDiv:hover + .screenshotBtnCaption {
-        display: block;
+      #exportDiv {
+        padding: 5px;
+        width: 300px;
       }
       
 </style>
@@ -203,7 +204,20 @@
     <div id="legendDiv" class="esri-widget"></div>
     <div id="attributionDiv" class="esri-widget"></div>
     <div id="screenshotBtnDiv" class="esri-widget"></div>
-    <div class="screenshotBtnCaption">Screenshot</div>
+    <div id="exportDiv" class="esri-widget">
+     <label class="widgetlabels">Export data to csv file</label>
+     <label class="widgetlabels">1. Select export features by polygon:</label>
+     <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;"></button>
+     <label class="widgetlabels">2. Select field option:</label>
+      <input type="radio" name="exportFieldSetting" id="exportFieldDisplayed" value="displayed" checked>Displayed fields only
+      <input type="radio" name="exportFieldSetting" id="exportFieldAll" value="allfields">All fields
+     <label class="widgetlabels">3. Select encoding:</label>
+      <input type="radio" name="exportEncodingSetting" id="exportUTF8BOM" value="encutfb" checked>UTF-8 with BOM
+      <input type="radio" name="exportEncodingSetting" id="exportUTF8" value="encutf">UTF-8
+     <label class="widgetlabels">4. Enter filename:</label>
+      <label class="widgetlabels"><input type="text" id="exportFileNameText" style="margin-left: 8px; margin-right: 8px; width: 274px;"></label>
+     <button class="esri-button" id="fileExportBtn">Export</button>
+    </div>
     <div id="titleDiv" class="esri-widget"><span class="titleString">Japan Mesh Simple Viewer 3D (beta)</span> by <a href="https://www.researchgate.net/profile/Takashi_Kirimura">Takashi Kirimura</a></div>
     <div id="howtouseDiv" class="esri-widget">
     <span class="htuTitle">How to use Japan Mesh Simple Viewer 3D</span>
@@ -251,6 +265,24 @@ var calculatedMinMax = false;
 var filteringSliderObject;
 var filteringSliderObjectNz;
 var featuresLoaded = 0; // number of loaded features
+var exportObjectIds;
+var meshcodeIndex;
+
+const ACTIONPANELOPEN = "Open Settings";
+const ACTIONPANELCLOSE = "Close Settings";
+const MESSAGE_FEATURESWILLBELOADED = " features will be loaded.";
+const MESSAGE_FEATURESLOADED = " features loaded.";
+const ALERTNODATA = "No data! Please load data.";
+const FILEAPIERRORMESSAGE = "Please upgrade your browser. This application need File API.";
+const EXPANDBASEMAP = "Change Basemap";
+const EXPANDHOWTOUSE = "How to Use";
+const EXPANDDESCRIPTION = "About";
+const EXPANDEXPORT = "Export CSV";
+const CAUTION_OVER50000 = "This viewer cannot draw more than 50,000 features. Please use filter options."
+const CAUTION_OVER30000 = "This viewer can draw more than around 30,000 features, but the map may be unstable. Please use filter options. Continue?"
+const CAUTION_OVER30000_YES = "<YES>";
+const CAUTION_OVER30000_NO = "<NO>";
+
 
 // half of mesh size by decimal degree [x, y]
 var meshSize = { "tertiary": [0.375/60.0, 0.25/60.0],
@@ -265,6 +297,7 @@ require([
   "esri/views/SceneView",
   "esri/Graphic",
   "esri/layers/FeatureLayer",
+  "esri/layers/GraphicsLayer",
   "esri/widgets/Legend",
   "esri/widgets/Attribution",
   "esri/symbols/support/symbolUtils",
@@ -281,7 +314,9 @@ require([
   "esri/widgets/Compass",
   "esri/widgets/Print",
   "esri/widgets/ScaleBar",
-  "esri/widgets/Slider"
+  "esri/widgets/Slider",
+  "esri/widgets/Sketch/SketchViewModel",
+  "esri/core/promiseUtils"
   ], function (
   esriConfig,
   Map,
@@ -289,6 +324,7 @@ require([
   SceneView,
   Graphic,
   FeatureLayer,
+  GraphicsLayer,
   Legend,
   Attribution,
   symbolUtils,
@@ -305,7 +341,9 @@ require([
   Compass,
   Print,
   ScaleBar,
-  Slider
+  Slider,
+  SketchViewModel,
+  promiseUtils
   ) {
     const map = new Map({
       basemap: "dark-gray-vector"
@@ -336,7 +374,7 @@ require([
     var bgExpand = new Expand({
       view: view,
       content: basemapGallery,
-      expandTooltip: "Change Basemap"
+      expandTooltip: EXPANDBASEMAP
     });
 
     basemapGallery.watch('activeBasemap', function(event) {
@@ -349,19 +387,26 @@ require([
       expandIconClass: "esri-icon-question",
       view: view,
       content: document.getElementById("howtouseDiv"),
-      expandTooltip: "How to Use"
+      expandTooltip: EXPANDHOWTOUSE
     });
 
     var descriptionExpand = new Expand({
       expandIconClass: "esri-icon-description",
       view: view,
       content: document.getElementById("descriptionDiv"),
-      expandTooltip: "About"
+      expandTooltip: EXPANDDESCRIPTION
     });
 
     var screenshotBtn = document.getElementById("screenshotBtnDiv");
     screenshotBtn.addEventListener("click", compositScreenshotImage);
 
+    var exportExpand = new Expand({
+      expandIconClass: "esri-icon-save",
+      view: view,
+      content: document.getElementById("exportDiv"),
+      expandTooltip: EXPANDEXPORT
+    });
+    
     // for capture
     var attributionWidget = new Attribution({
       view: view,
@@ -376,6 +421,8 @@ require([
     view.ui.add(descriptionExpand, "top-left");
     view.ui.add(howtouseExpand, "top-left");
     view.ui.add(screenshotBtn, "top-left");
+    view.ui.add(exportExpand, "top-left");
+    
     view.ui.add(document.getElementById("actions"), "top-right");
     view.ui.add(legend, "bottom-left");
     
@@ -408,6 +455,7 @@ require([
         }
       ],
       objectIdField: "ObjectID",
+      outFields: ["*"],
       geometryType: "point",
       spatialReference: { wkid: 4326 },
       source: [],
@@ -461,6 +509,7 @@ require([
         }
       ],
       objectIdField: "ObjectID",
+      outFields: ["*"],
       geometryType: "polygon",
       spatialReference: { wkid: 4326 },
       source: [],
@@ -506,7 +555,7 @@ require([
     filteringSliderObject.on(["thumb-change", "thumb-drag"], function() {
       var estFeaturesCount = estimateLoadingFeatures();
       var messagespan = document.getElementById("estimatefeaturecount");
-      messagespan.innerText = estFeaturesCount.toString() + " features will be loaded.";
+      messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
     });
 
     // Slider for normalization value filtering
@@ -527,10 +576,272 @@ require([
     filteringSliderObjectNz.on(["thumb-change", "thumb-drag"], function() {
       var estFeaturesCount = estimateLoadingFeatures();
       var messagespan = document.getElementById("estimatefeaturecount");
-      messagespan.innerText = estFeaturesCount.toString() + " features will be loaded.";
+      messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
     });
+    
+    
+    
+    document.getElementById("drawQueryPolygonBtn").addEventListener("click", function() {
+      clearSketchGeometry();
+      sketchViewModel.create("polygon");
+    });
+    
+    document.getElementById("fileExportBtn").addEventListener("click", function() {
+      if (highlightHandle && exportObjectIds.length > 0) {
+        saveMeshData();
+      }
+    });
+    
+    // query feature by graphics
+    let ptLayerView = null;
+    let pgLayerView = null;
+    
+    view.whenLayerView(meshdataLayer).then(function(layerView) {
+      ptLayerView = layerView;
+    });
+    
+    view.whenLayerView(meshdataPgLayer).then(function(layerView) {
+      pgLayerView = layerView;
+    });
+    
+    const sketchLayer = new GraphicsLayer();
+    map.add(sketchLayer);
+    
+    let sketchGeometry = null;
+    const sketchViewModel = new SketchViewModel({
+      layer: sketchLayer,
+      defaultUpdateOptioins: {
+        tool: "reshape",
+        toglleToolOnClick: false
+      },
+      view: view,
+      defaultCreateOptions: { hasZ: false }
+    });
+    
+    sketchViewModel.on("create", function(event) {
+      if (event.state === "complete") {
+        sketchGeometry = event.graphic.geometry;
+        runQuery();
+      }
+    });
+    
+    sketchViewModel.on("update", function(event) {
+      if (event.state === "complete") {
+        sketchGeometry = event.graphics[0].geometry;
+        runQuery();
+      }
+    });
+    
+    function clearSketchGeometry() {
+      sketchGeometry = null;
+      sketchViewModel.cancel();
+      sketchLayer.removeAll();
+      clearHighlighting();
+    }
+    
+    var debouncedRunQuery = promiseUtils.debounce(function() {
+      if (!sketchGeometry) {
+        return;
+      }
+      return promiseUtils.eachAlways([
+        updateScene()
+      ]);
+    });
+    
+    function runQuery() {
+      debouncedRunQuery().catch((error) => {
+        if (error.name === "AbortError") {
+          return;
+        }
+        console.error(error);
+      });
+    }
+    
+    var highlightHandle = null;
+    function clearHighlighting() {
+      if (highlightHandle) {
+        highlightHandle.remove();
+        highlightHandle = null;
+      }
+    }
+    
+    function highlightPolygons(objectIds) {
+      clearHighlighting();
+      exportObjectIds = objectIds;
+      var rendererCode = document.getElementById("rmethodlist").value;
+      if (rendererCode < 8) {
+        const objectIdField = meshdataLayer.objectIdField;
+        highlightHandle = ptLayerView.highlight(objectIds);
+      } else {
+        const objectIdField = meshdataPgLayer.objectIdField;
+        highlightHandle = pgLayerView.highlight(objectIds);
+      }
+    }
+    
+    function updateScene() {
+      var rendererCode = document.getElementById("rmethodlist").value;
+      if (rendererCode < 8) {
+        const query = ptLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        return ptLayerView
+          .queryObjectIds(query)
+          .then(highlightPolygons);
+      } else {
+        const query = pgLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        return pgLayerView
+          .queryObjectIds(query)
+          .then(highlightPolygons);
+      }
+    }
+    
+    function saveMeshData() {
+      var rendererCode = document.getElementById("rmethodlist").value;
+      
+      var exportAllFields = false;
+      if (document.getElementById("exportFieldDisplayed").checked) exportAllFields = false;
+      if (document.getElementById("exportFieldAll").checked) exportAllFields = true;
+      
+      var exportEncoding = "";
+      if (document.getElementById("exportUTF8BOM").checked) exportEncoding = "utf8b";
+      if (document.getElementById("exportUTF8").checked) exportEncoding = "utf8";
+      
+      var exportFileName = document.getElementById("exportFileNameText").value;
+      if (exportFileName == "") exportFileName = "meshdata.csv";
+      if (exportFileName.slice(-4).toLowerCase() != ".csv") exportFileName += ".csv";
+      
+      if (rendererCode < 8) {
+        const query = ptLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        query.returnGeometry = true;
+        query.outFields = ["*"];
+        return ptLayerView.queryFeatures(query).then(function(result) {
+          var exportFeatureCount = result.features.length;
+          var textContents = "";
+          var newLine = "\n";
+          
+          // header
+          if (exportAllFields) {
+            textContents = "MESHCODE,LONGITUDE,LATITUDE";
+            for (var n=0; n<fieldNames.length; n++){
+              textContents += "," + fieldNames[n].trim();
+            }
+            textContents += newLine;
+          } else {
+            var vfieldName = fieldNames[valueFieldNum].trim();
+            textContents = "MESHCODE,LONGITUDE,LATITUDE," + vfieldName;
+            if (nzFieldNum != -1) {
+              var nzfieldName = fieldNames[nzFieldNum].trim();
+              textContents += "," + nzfieldName + newLine;
+            } else {
+              textContents += newLine;
+            }
+          }
+          
+          // contents
+          for (var i=0; i<exportFeatureCount; i++) {
+            var mcode = result.features[i].attributes["Meshcode"];
+            textContents += mcode;
+            var latlon = latlonFromMeshcode(mcode);
+            var lonx = latlon.x
+            var laty = latlon.y;
+            textContents += "," + lonx.toString() + "," + laty.toString();
+            if (exportAllFields) {
+              var idx = meshcodeIndex[mcode];
+              var row = rawData[idx].replace(/\r?\n/g,'');
+              textContents += "," + row + newLine;
+            } else {
+              textContents += "," + isNullConvert(result.features[i].attributes["Value"],"");
+              if (nzFieldNum != -1) {
+                textContents += "," + isNullConvert(result.features[i].attributes["Nzvalue"],"") + newLine;
+              } else {
+                textContents += newLine;
+              }
+            }
+          }
+          
+          var blob;
+          if (exportEncoding == "utf8b") {
+            let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+          } else {
+            blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+          }
+          let downlink = document.createElement("a");
+          clearSketchGeometry();
+          downlink.href = URL.createObjectURL(blob);
+          downlink.download = exportFileName;
+          downlink.click();
+        }, console.error);
+      } else { 
+        const query = pgLayerView.createQuery();
+        query.geometry = sketchGeometry;
+        query.returnGeometry = true;
+        query.outFields = ["*"];
+        return pgLayerView.queryFeatures(query).then(function(result) {
+          var exportFeatureCount = result.features.length;
+          var textContents = "";
+          var newLine = "\n";
+          
+          // header
+          if (exportAllFields) {
+            textContents = "MESHCODE,LONGITUDE,LATITUDE";
+            for (var n=0; n<fieldNames.length; n++){
+              textContents += "," + fieldNames[n].trim();
+            }
+            textContents += newLine;
+          } else {
+            var vfieldName = fieldNames[valueFieldNum].trim();
+            textContents = "MESHCODE,LONGITUDE,LATITUDE," + vfieldName;
+            if (nzFieldNum != -1) {
+              var nzfieldName = fieldNames[nzFieldNum].trim();
+              textContents += "," + nzfieldName + newLine;
+            } else {
+              textContents += newLine;
+            }
+          }
+          
+          // contents
+          for (var i=0; i<exportFeatureCount; i++) {
+            var mcode = result.features[i].attributes["Meshcode"];
+            textContents += mcode;
+            var latlon = latlonFromMeshcode(mcode);
+            var lonx = latlon.x
+            var laty = latlon.y;
+            textContents += "," + lonx.toString() + "," + laty.toString();
+            if (exportAllFields) {
+              var idx = meshcodeIndex[mcode];
+              var row = rawData[idx].replace(/\r?\n/g,'');
+              textContents += "," + row + newLine;
+            } else {
+              textContents += "," + isNullConvert(result.features[i].attributes["Value"],"");
+              if (nzFieldNum != -1) {
+                textContents += "," + isNullConvert(result.features[i].attributes["Nzvalue"],"") + newLine;
+              } else {
+                textContents += newLine;
+              }
+            }
+          }
+          
+          var blob;
+          if (exportEncoding == "utf8b") {
+            let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+          } else {
+            blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+          }
+          let downlink = document.createElement("a");
+          clearSketchGeometry();
+          downlink.href = URL.createObjectURL(blob);
+          downlink.download = exportFileName;
+          downlink.click();
+        }, console.error);
+      }
+    }
+    
 
-
+    document.getElementById("closeActionPanelBtn").innerText = ACTIONPANELCLOSE;
+    
     refreshColorRamps();
     selectRenderingMethod();
 
@@ -541,6 +852,11 @@ require([
     /* FUNCTIONS */
     /*           */
     
+    function isNullConvert(val1, val2) {
+      return (val1 == null)?val2:val1;
+    }
+    
+    
     function drawFeaturesCheck() {
       var fcount = estimateLoadingFeatures();
       
@@ -548,16 +864,16 @@ require([
         // This viewer cannot draw more than 50,000 features
         var messDiv = document.getElementById("messagezone");
         messDiv.style.color = "red";
-        messDiv.innerText = "This viewer cannot draw more than 50,000 features. Please use filter options.";
+        messDiv.innerText = CAUTION_OVER50000;
         return false;
       } else if (fcount >= 30000) {
         // This viewer can draw more than around 30,000 features, but the map may be unstable. Recommend to use filter options.
         var messDiv = document.getElementById("messagezone");
         messDiv.style.color = "red";
-        messDiv.innerText = "This viewer can draw more than around 30,000 features, but the map may be unstable. Please use filter options. Continue?";
+        messDiv.innerText = CAUTION_OVER30000;
         var yesMessBtn = document.createElement("button");
         yesMessBtn.classList.add("esri-button--tertiary");
-        yesMessBtn.innerText = "<YES>";
+        yesMessBtn.innerText = CAUTION_OVER30000_YES;
         yesMessBtn.addEventListener("click", function() {
           messDiv.innerHTML = "";
           drawFeatures();
@@ -565,7 +881,7 @@ require([
         messDiv.appendChild(yesMessBtn);
         var noMessBtn = document.createElement("button");
         noMessBtn.classList.add("esri-button--tertiary");
-        noMessBtn.innerText = "<NO>";
+        noMessBtn.innerText = CAUTION_OVER30000_NO;
         noMessBtn.addEventListener("click", function() {
           messDiv.innerHTML = "";
         });
@@ -579,7 +895,7 @@ require([
     
     function drawFeatures(){
       var rendererCode = document.getElementById("rmethodlist").value;
-      
+      clearSketchGeometry();
       if (cSlider) {
         let container1 = document.getElementById("colorSliderDiv");
         view.ui.remove(container1);
@@ -610,6 +926,8 @@ require([
       loadData();
 
       var flagFiltering = document.getElementById("chkboxFiltering");
+      
+      document.getElementById("exportFileNameText").value = document.getElementById("maptitle").value;
       
       if (rendererCode < 8) {
         meshdataLayer.title = document.getElementById("maptitle").value;
@@ -698,7 +1016,7 @@ require([
         meshdataPgLayer.refresh();
       }
       document.getElementById("messagezone").style.color = "";
-      document.getElementById("messagezone").innerText = featuresLoaded.toString() + " features loaded.";
+      document.getElementById("messagezone").innerText = featuresLoaded.toString() + MESSAGE_FEATURESLOADED;
     }
     
     function removeFeatures(renderer){
@@ -1309,23 +1627,21 @@ require([
     }
     
     
-    
-    
-    
-    
-    
-    
 });
+
+
+
 
 if (window.File) {
   document.getElementById("dropcsv").addEventListener("drop", onDrop, false);
 } else {
-  alert("Please upgrade your browser. This application need File API.");
+  alert(FILEAPIERRORMESSAGE);
 }
 
 function loadData() {
   // rawData -> meshData
   meshData = [];
+  meshcodeIndex = new Array();
   meshcodeFieldNum = document.getElementById("fieldlist1").value;
   valueFieldNum = document.getElementById("fieldlist2").value;
   valueMin = Number.MAX_SAFE_INTEGER;
@@ -1343,82 +1659,13 @@ function loadData() {
   for (var j=1; j<rawData.length; j++){
     var row = rawData[j].split(/,/);
     // calculate lat/lon from meshcode
+    
     if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
+      var latlon = latlonFromMeshcode(row[meshcodeFieldNum]);
       var lonx, laty;
-      var m1y = parseInt(row[meshcodeFieldNum].substring(0,2),10) / 1.5;
-      var m1x = parseInt(row[meshcodeFieldNum].substring(2,4),10) + 100.0;
-      var m2y = parseInt(row[meshcodeFieldNum].substring(4,5),10) * (5.0/60.0);
-      var m2x = parseInt(row[meshcodeFieldNum].substring(5,6),10) * (7.5/60.0);
-      var m3y = parseInt(row[meshcodeFieldNum].substring(6,7),10) * (0.5/60.0);
-      var m3x = parseInt(row[meshcodeFieldNum].substring(7,8),10) * (0.75/60.0);
-      
-      lonx = m1x + m2x + m3x;
-      laty = m1y + m2y + m3y;
-      if (row[meshcodeFieldNum].length == 8) { // 8 digits 3ji mesh
-        meshType = "tertiary";
-        lonx = lonx + meshSize[meshType][0];
-        laty = laty + meshSize[meshType][1];
-      } else if (row[meshcodeFieldNum].length == 9) { // 9 digits 4ji mesh
-        meshType = "quaternary";
-        switch (row[meshcodeFieldNum].substring(8,9)) {
-          case "1":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "2":
-            lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "3":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
-            break;
-          case "4":
-            lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
-            laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
-            break;
-        }
-      } else if (row[meshcodeFieldNum].length == 10) { // 10 digits 5ji mesh
-        meshType = "quinary";
-        switch (row[meshcodeFieldNum].substring(8,9)) {
-          case "1":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "2":
-            lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "3":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
-            break;
-          case "4":
-            lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
-            laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
-            break;
-        }
-        switch (row[meshcodeFieldNum].substring(9,10)) {
-          case "1":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "2":
-            lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
-            laty = laty + meshSize[meshType][1];
-            break;
-          case "3":
-            lonx = lonx + meshSize[meshType][0];
-            laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
-            break;
-          case "4":
-            lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
-            laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
-            break;
-        }
-      }
-      // 11 digits 6jimesh senary (in future)
-      
+      lonx = latlon.x;
+      laty = latlon.y;
+      meshcodeIndex[row[meshcodeFieldNum]] = j;
 
       var meshvalue = parseFloat(row[valueFieldNum]);
       if (nzFieldNum != -1) {
@@ -1430,7 +1677,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum],
+                    MESHCODE: row[meshcodeFieldNum].toString(),
                     VALUE: meshvalue,
                     NZVALUE: nzvalue
             });
@@ -1445,7 +1692,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum],
+                    MESHCODE: row[meshcodeFieldNum].toString(),
                     VALUE: meshvalue,
                     NZVALUE: nzvalue
             });
@@ -1459,7 +1706,7 @@ function loadData() {
           meshData.push({
                   LATITUDE: laty,
                   LONGITUDE: lonx,
-                  MESHCODE: row[meshcodeFieldNum],
+                  MESHCODE: row[meshcodeFieldNum].toString(),
                   VALUE: meshvalue,
                   NZVALUE: nzvalue
           });
@@ -1475,7 +1722,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum],
+                    MESHCODE: row[meshcodeFieldNum].toString(),
                     VALUE: meshvalue,
                     NZVALUE: 0
             });
@@ -1487,7 +1734,7 @@ function loadData() {
           meshData.push({
                   LATITUDE: laty,
                   LONGITUDE: lonx,
-                  MESHCODE: row[meshcodeFieldNum],
+                  MESHCODE: row[meshcodeFieldNum].toString(),
                   VALUE: meshvalue,
                   NZVALUE: 0
           });
@@ -1527,10 +1774,10 @@ function fieldRefresh() {
     var estatflag = document.getElementById("estatdata");
     var colnameRow = 0;
     if (estatflag.checked) {
-      // 2行目を見るように変更
+      // field name in 2nd row
       colnameRow = 1;
     } else {
-      // 1行目から読み込み
+      // field name in 1st row
       colnameRow = 0;
     }
 
@@ -1549,7 +1796,10 @@ function fieldRefresh() {
     var colNames = rawData[colnameRow].split(/,/);
     fieldNames = rawData[colnameRow].split(/,/);
     for (var k=0; k<colNames.length; k++) {
-      if (colNames[k] == "") colNames[k] = rawData[0].split(/,/)[k];
+      if (colNames[k] == "") {
+        colNames[k] = rawData[0].split(/,/)[k];
+        fieldNames[k] = colNames[k];
+      }
       let option1 = document.createElement('option');
       option1.setAttribute('value', k);
       option1.innerHTML = colNames[k].substr(0,18);
@@ -1575,7 +1825,6 @@ function fieldRefresh() {
   }
 }
 
-
 function onDrop(event) {
   var files = event.dataTransfer.files;
   var addflag = document.getElementById("adddata");
@@ -1584,6 +1833,8 @@ function onDrop(event) {
   if (!addflag.checked) {
     rawData = [];
   }
+  clearActionPanelSettings();
+  clearActionPanelSettingsNz();
   
   for (var i=0; i<files.length; i++){
     var f = files[i];
@@ -1784,9 +2035,9 @@ function calculateMinMaxValues() {
     }
     var estFeaturesCount = estimateLoadingFeatures();
     var messagespan = document.getElementById("estimatefeaturecount");
-    messagespan.innerText = estFeaturesCount.toString() + " features will be loaded.";
+    messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
   } else {
-    alert("No data! Please load data.");
+    alert(ALERTNODATA);
   }
 }
 
@@ -1818,9 +2069,9 @@ function calculateNzMinMaxValues() {
     filteringSliderObjectNz.values = [nzValueMin, nzValueMax];
     var estFeaturesCount = estimateLoadingFeatures();
     var messagespan = document.getElementById("estimatefeaturecount");
-    messagespan.innerText = estFeaturesCount.toString() + " features will be loaded.";
+    messagespan.innerText = estFeaturesCount.toString() + MESSAGE_FEATURESWILLBELOADED;
   } else {
-    alert("No data! Please load data.");
+    alert(ALERTNODATA);
   }
 }
 
@@ -1836,7 +2087,7 @@ function estimateLoadingFeatures() {
   
   for (var j=1; j<rawData.length; j++){
     var row = rawData[j].split(/,/);
-    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // 8桁以上かつマイナスではない
+    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
       var meshvalue = parseFloat(row[valueFieldNum]);
       if (nzFieldNum != -1) {
         var nzvalue = parseFloat(row[nzFieldNum]);
@@ -1875,15 +2126,18 @@ function closeActionPanel() {
   var btn = document.getElementById("closeActionPanelBtn");
   var panel = document.getElementById("actions");
   var topelem = document.getElementById("dropcsv");
-  if (btn.innerText == "Close Settings") {
-    panel.style.height = "26px";
+  if (btn.innerText == ACTIONPANELCLOSE) {
+    panel.style.height = "42px";
+    btn.className = "esri-button";
+    btn.style.marginBottom = "5px";
     panel.style.overflow = "hidden";
-    btn.innerText = "Open Settings";
+    btn.innerText = ACTIONPANELOPEN;
     panel.insertBefore(btn, topelem);
-  } else if (btn.innerText == "Open Settings") {
+  } else if (btn.innerText == ACTIONPANELOPEN) {
     panel.style.height = "";
     panel.style.overflow = "visible";
-    btn.innerText = "Close Settings";
+    btn.className = "esri-button--tertiary";
+    btn.innerText = ACTIONPANELCLOSE;
     panel.appendChild(btn);
   }
 }
@@ -1902,6 +2156,88 @@ function clearActionPanelSettingsNz() {
   flagNz.checked = false;
   checkNzFilterFlag();
 }
+
+function latlonFromMeshcode(meshcodestr) {
+  if (meshcodestr.length >= 8 && parseInt(meshcodestr, 10) > 0) { // more than 8 digits and non-negative
+    var lonx, laty;
+    var m1y = parseInt(meshcodestr.substring(0,2),10) / 1.5;
+    var m1x = parseInt(meshcodestr.substring(2,4),10) + 100.0;
+    var m2y = parseInt(meshcodestr.substring(4,5),10) * (5.0/60.0);
+    var m2x = parseInt(meshcodestr.substring(5,6),10) * (7.5/60.0);
+    var m3y = parseInt(meshcodestr.substring(6,7),10) * (0.5/60.0);
+    var m3x = parseInt(meshcodestr.substring(7,8),10) * (0.75/60.0);
+    
+    lonx = m1x + m2x + m3x;
+    laty = m1y + m2y + m3y;
+    if (meshcodestr.length == 8) { // 8 digits 3ji mesh
+      meshType = "tertiary";
+      lonx = lonx + meshSize[meshType][0];
+      laty = laty + meshSize[meshType][1];
+    } else if (meshcodestr.length == 9) { // 9 digits 4ji mesh
+      meshType = "quaternary";
+      switch (meshcodestr.substring(8,9)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+    } else if (meshcodestr.length == 10) { // 10 digits 5ji mesh
+      meshType = "quinary";
+      switch (meshcodestr.substring(8,9)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (22.5 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (15.0 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+      switch (meshcodestr.substring(9,10)) {
+        case "1":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "2":
+          lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
+          laty = laty + meshSize[meshType][1];
+          break;
+        case "3":
+          lonx = lonx + meshSize[meshType][0];
+          laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
+          break;
+        case "4":
+          lonx = lonx + (11.25 / 3600.0) + meshSize[meshType][0];
+          laty = laty + (7.5 / 3600.0) + meshSize[meshType][1];
+          break;
+      }
+    }
+    // 11 digits 6jimesh senary (in future)
+  }
+  var returnVal = { "x": lonx, "y": laty };
+  return returnVal;
+}
+
 
 
 </script>
