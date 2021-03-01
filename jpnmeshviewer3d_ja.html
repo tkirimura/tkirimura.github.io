@@ -37,7 +37,7 @@
         width: 300px;
       }
       
-      #displayedfilename {
+      #displayedfilename, #joinfilename1, #joinfilename2, #numofrecordsjoin1, #numofrecordsjoin2 {
         font-weight: bold;
       }
       
@@ -134,17 +134,93 @@
         width: 300px;
       }
       
+      .flex-container {
+        height: 100%;
+        display: flex;
+        overflow: hidden;
+      }
+      
+      #sidePanelDiv {
+        overflow: auto;
+        display: none;
+        padding: 5px;
+        width: 400px;
+        font-size: small;
+      }
+
+      #dropcsv1,#dropcsv2 {
+        line-height: 1.5em;
+        padding: 10px;
+        border: 4px solid red;
+        margin-bottom: 5px;
+        font-size: large;
+        width: 290px;
+        background-color: gray;
+      }
+      
+      #showSidePanelBtn {
+        margin-left: 5px;
+      }
+      
+      #exportDivDisplayedData {
+        display: inline;
+      }
+
+      #exportDivLoadedData {
+        display: none;
+      }
+      
+      .widgetlabelTitle {
+        font-weight: bold;
+      }
+      
 </style>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.0.0-rc.7/dist/html2canvas.min.js"></script>
 <script src="https://js.arcgis.com/4.18/"></script>
 
 </head>
 <body>
+  <div class="flex-container">
     <div id="viewDiv">
     </div>
+    <div id="sidePanelDiv">
+      <label class="widgetlabels widgetlabelTitle">ファイルの結合</label>
+      <label class="widgetlabels widgetlabelTitle">メッシュデータ1</label>
+      <span class="esri-button" id="dropcsv1" ondragover="onDragOverDropBtn(event)" onclick="selectFileDialog(1)">ファイルをドロップ or 選択
+        <input type="file" id="selectcsv1" onchange="loadJoinFile(event, 'select', 1)" hidden>
+      </span>
+      <label class="widgetlabels">ファイル名: <br><span id="joinfilename1"></span></label>
+      <label class="widgetlabels">レコード数: <span id="numofrecordsjoin1"></span></label>
+      <label class="widgetlabels"><input type="checkbox" id="estatdatajoin1" style="vertical-align: middle;" onclick="fieldRefreshJoin(1)"> e-Statデータ</label>
+      <label class="widgetlabels">メッシュコードのフィールド: <br>
+        <select name="meshfield" id="fieldlistjoin1">
+        </select>
+      </label>
+      <label class="widgetlabels widgetlabelTitle">メッシュデータ2</label>
+      <span class="esri-button" id="dropcsv2" ondragover="onDragOverDropBtn(event)" onclick="selectFileDialog(2)">ファイルをドロップ or 選択
+        <input type="file" id="selectcsv2" onchange="loadJoinFile(event, 'select', 2)" hidden>
+      </span>
+      <label class="widgetlabels">ファイル名: <br><span id="joinfilename2"></span></label>
+      <label class="widgetlabels">レコード数: <span id="numofrecordsjoin2"></span></label>
+      <label class="widgetlabels"><input type="checkbox" id="estatdatajoin2" style="vertical-align: middle;" onclick="fieldRefreshJoin(2)"> e-Statデータ</label>
+      <label class="widgetlabels">メッシュコードのフィールド: <br>
+        <select name="meshfield" id="fieldlistjoin2">
+        </select>
+      </label>
+      <label class="widgetlabels"><input type="checkbox" id="joinMethodInner" style="vertical-align: middle;"> 両方に一致するレコードのみ出力</label>
+      <button class="esri-button" onclick="joinMeshData()">結合</button>
+      <label class="widgetlabels"><span id="messagezonejoin"></span></label>
+      <button class="esri-button--tertiary" onclick="hideSidePanel()">閉じる</button>
+    </div>
+  </div>
     <div id="actions" class="esri-widget">
-      <span class="esri-button" id="dropcsv" ondragover="onDragOverDropBtn(event)">ここにファイルをドロップ</span>
-      <label class="widgetlabels"><input type="checkbox" id="adddata" style="vertical-align: middle;" onclick="adddataCheck()"> データの追加読み込み</label>
+      <span class="esri-button" id="dropcsv" ondragover="onDragOverDropBtn(event)" onclick="selectFileDialog(3)">ファイルをドロップ or 選択
+        <input type="file" id="selectcsv" onchange="loadMappingFile(event, 'select')" multiple hidden>
+      </span>
+      <label class="widgetlabels"><input type="checkbox" id="adddata" style="vertical-align: middle;" onclick="adddataCheck()"> データの追加読み込み
+      <button class="esri-button--secondary" id="showSidePanelBtn" onclick="showSidePanel()">ファイル結合>></button>
+      </label>
+      <label class="widgetlabels"><input type="checkbox" id="tkycoordinatesystems" style="vertical-align: middle;"> 旧測地系メッシュ</label>
       <label class="widgetlabels">ファイル名: <br><span id="displayedfilename"></span></label>
       <label class="widgetlabels">レコード数: <span id="numofrecords"></span></label>
       <label class="widgetlabels">フィールド数: <span id="numoffields"></span></label>
@@ -205,20 +281,38 @@
     <div id="attributionDiv" class="esri-widget"></div>
     <div id="screenshotBtnDiv" class="esri-widget"></div>
     <div id="exportDiv" class="esri-widget">
-     <label class="widgetlabels">表示データのCSVへのエクスポート</label>
-     <label class="widgetlabels">1. ポリゴンを描いて出力するフィーチャを選択します:</label>
-     <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;">ポリゴン描画</button>
-     <label class="widgetlabels">2. 出力するフィールドを選びます:</label>
-      <input type="radio" name="exportFieldSetting" id="exportFieldDisplayed" value="displayed" checked>表示フィールドのみ
-      <input type="radio" name="exportFieldSetting" id="exportFieldAll" value="allfields">全フィールド
-     <label class="widgetlabels">3. エンコーディングを選びます:</label>
-      <input type="radio" name="exportEncodingSetting" id="exportUTF8BOM" value="encutfb" checked>UTF-8 (BOM付き)
-      <input type="radio" name="exportEncodingSetting" id="exportUTF8" value="encutf">UTF-8 (BOMなし)
-     <label class="widgetlabels">4. ファイル名を入力します:</label>
-      <label class="widgetlabels"><input type="text" id="exportFileNameText" style="margin-left: 8px; margin-right: 8px; width: 274px;"></label>
-     <button class="esri-button" id="fileExportBtn">CSVファイル出力</button>
+     <label class="widgetlabels widgetlabelTitle">エクスポート対象: 
+      <select name="exportTypeSelect" id="exportTypeSelect" onchange="changeExportPanel()">
+       <option value="displayeddata" selected>表示データ</option>
+       <option value="loadeddata">読み込みデータ</option>
+      </select>
+     </label>
+     <div id="exportDivDisplayedData">
+      <label class="widgetlabels widgetlabelTitle">表示データのCSVへのエクスポート</label>
+      <label class="widgetlabels">1. ポリゴンを描いて出力するフィーチャを選択します:</label>
+      <button class="esri-widget--button esri-icon-polygon" id="drawQueryPolygonBtn" style="margin-left: 8px; margin-right: 8px; width: 274px;">ポリゴン描画</button>
+      <label class="widgetlabels">2. 出力するフィールドを選びます:</label>
+       <input type="radio" name="exportFieldSetting" id="exportFieldDisplayed" value="displayed" checked>表示フィールドのみ
+       <input type="radio" name="exportFieldSetting" id="exportFieldAll" value="allfields">全フィールド
+      <label class="widgetlabels">3. UTF-8の保存オプションを選びます:</label>
+       <input type="radio" name="exportEncodingSetting" id="exportUTF8BOM" value="encutfb" checked>UTF-8 (BOM付き)
+       <input type="radio" name="exportEncodingSetting" id="exportUTF8" value="encutf">UTF-8 (BOMなし)
+      <label class="widgetlabels">4. ファイル名を入力します:</label>
+       <label class="widgetlabels"><input type="text" id="exportFileNameText" style="margin-left: 8px; margin-right: 8px; width: 274px;"></label>
+      <button class="esri-button" id="fileExportBtn">CSVファイル出力</button>
+     </div>
+     <div id="exportDivLoadedData">
+      <label class="widgetlabels widgetlabelTitle">読み込みデータのCSVへのエクスポート</label>
+      <label class="widgetlabels" style="color: red;">描画設定の絞り込みオプションは反映されません.</label>
+      <label class="widgetlabels">1. UTF-8の保存オプションを選びます:</label>
+       <input type="radio" name="exportEncodingSettingLoadedData" id="exportUTF8BOMLoadedData" value="encutfb" checked>UTF-8 (BOM付き)
+       <input type="radio" name="exportEncodingSettingLoadedData" id="exportUTF8LoadedData" value="encutf">UTF-8 (BOMなし)
+      <label class="widgetlabels">2. ファイル名を入力します:</label>
+       <label class="widgetlabels"><input type="text" id="exportFileNameTextLoadedData" style="margin-left: 8px; margin-right: 8px; width: 274px;"></label>
+      <button class="esri-button" id="fileExportBtnLoadedData">CSVファイル出力</button>
+     </div>
     </div>
-    <div id="titleDiv" class="esri-widget"><span class="titleString">MeshDataView3D (beta)</span> by <a href="https://www.researchgate.net/profile/Takashi_Kirimura">Takashi Kirimura</a></div>
+    <div id="titleDiv" class="esri-widget"><span class="titleString">MeshDataView3D</span> by <a href="https://www.researchgate.net/profile/Takashi_Kirimura">Takashi Kirimura</a></div>
     <div id="howtouseDiv" class="esri-widget">
     <span class="htuTitle">MeshDataView3Dの使い方</span>
     <span>
@@ -268,6 +362,15 @@ var featuresLoaded = 0; // number of loaded features
 var exportObjectIds;
 var meshcodeIndex;
 
+// Join Process
+var joinRawData1 = [];
+var joinRawData2 = [];
+var joinFieldNames1 = [];
+var joinFieldNames2 = [];
+var joinMeshcodeFieldNum1 = 0;
+var joinMeshcodeFieldNum2 = 0;
+
+
 const ACTIONPANELOPEN = "描画設定を開く";
 const ACTIONPANELCLOSE = "描画設定を閉じる";
 const MESSAGE_FEATURESWILLBELOADED = " フィーチャが読み込まれます.";
@@ -280,8 +383,14 @@ const EXPANDDESCRIPTION = "このツールについて";
 const EXPANDEXPORT = "CSVエクスポート";
 const CAUTION_OVER50000 = "50,000フィーチャ以上を描画することはできません. 絞り込みオプションを使ってください."
 const CAUTION_OVER30000 = "約30,000以上のフィーチャを描画することはできますが、描画が不安定になります. 絞り込みオプションを使ってください. 続けますか？"
-const CAUTION_OVER30000_YES = "<はい>";
-const CAUTION_OVER30000_NO = "<いいえ>";
+const MESSAGE_YES = "<はい>";
+const MESSAGE_NO = "<いいえ>";
+const CAUTION_NOJOINDATA1 = "メッシュデータ1がありません.";
+const CAUTION_NOJOINDATA2 = "メッシュデータ2がありません.";
+const CAUTION_CANNOT_LOAD_MULTIPLEFILES_IN_JOIN = "複数ファイルのドロップには対応していません.";
+const JOINEDMESSAGE_LOADMAPYESNO = " レコード結合されました.地図に読み込みますか？";
+const POPUP_GETADDRESS_BTN = "中心点住所の取得";
+const POPUP_ADDRESS_NOTFOUND = "住所を見つけることができませんでした.";
 
 
 // half of mesh size by decimal degree [x, y]
@@ -316,7 +425,10 @@ require([
   "esri/widgets/ScaleBar",
   "esri/widgets/Slider",
   "esri/widgets/Sketch/SketchViewModel",
-  "esri/core/promiseUtils"
+  "esri/core/promiseUtils",
+  "esri/tasks/Locator",
+  "esri/geometry/projection",
+  "esri/geometry/SpatialReference"
   ], function (
   esriConfig,
   Map,
@@ -343,7 +455,10 @@ require([
   ScaleBar,
   Slider,
   SketchViewModel,
-  promiseUtils
+  promiseUtils,
+  Locator,
+  projection,
+  SpatialReference
   ) {
     const map = new Map({
       basemap: "dark-gray-vector"
@@ -425,7 +540,11 @@ require([
     
     view.ui.add(document.getElementById("actions"), "top-right");
     view.ui.add(legend, "bottom-left");
-    
+
+    var locatorTask = new Locator({
+      url: "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer"
+    });
+
     const drawBtn = document.getElementById("meshmap-drawing");
 
     drawBtn.addEventListener("click", drawFeaturesCheck);
@@ -442,6 +561,16 @@ require([
           name: "Meshcode",
           alias: "Meshcode",
           type: "string"
+        },
+        {
+          name: "Longitude",
+          alias: "Longitude",
+          type: "double"
+        },
+        {
+          name: "Latitude",
+          alias: "Latitude",
+          type: "double"
         },
         {
           name: "Value",
@@ -496,6 +625,16 @@ require([
           name: "Meshcode",
           alias: "Meshcode",
           type: "string"
+        },
+        {
+          name: "Longitude",
+          alias: "Longitude",
+          type: "double"
+        },
+        {
+          name: "Latitude",
+          alias: "Latitude",
+          type: "double"
         },
         {
           name: "Value",
@@ -591,6 +730,45 @@ require([
         saveMeshData();
       }
     });
+    
+    document.getElementById("fileExportBtnLoadedData").addEventListener("click", function() {
+      if (rawData.length > 0) {
+        saveLoadedData();
+      }
+    });
+    
+    
+    view.on("resize", function(event) {
+      var actDiv = document.getElementById("actions");
+      if ((event.height - actDiv.getBoundingClientRect().height) < 40) {
+        var btn = document.getElementById("closeActionPanelBtn");
+        if (btn.innerText == ACTIONPANELCLOSE) {
+          actDiv.style.overflowY = "scroll";
+          actDiv.style.height = (event.height - 40).toString() + "px";
+        }
+      } else {
+        var btn = document.getElementById("closeActionPanelBtn");
+        if (btn.innerText == ACTIONPANELCLOSE) {
+          actDiv.style.overflowY = "auto";
+          actDiv.style.height = "";
+        }
+      }
+    });
+    
+    
+    view.when(function() {
+      var actDiv = document.getElementById("actions");
+      if ((view.height - actDiv.getBoundingClientRect().height) < 40) {
+        var btn = document.getElementById("closeActionPanelBtn");
+        btn.click();
+      }
+    })
+    .catch(function(error) { console.log(error); });
+    
+    
+    
+    
+    
     
     // query feature by graphics
     let ptLayerView = null;
@@ -742,9 +920,11 @@ require([
           for (var i=0; i<exportFeatureCount; i++) {
             var mcode = result.features[i].attributes["Meshcode"];
             textContents += mcode;
-            var latlon = latlonFromMeshcode(mcode);
-            var lonx = latlon.x
-            var laty = latlon.y;
+            //var latlon = latlonFromMeshcode(mcode);
+            var lonx = result.features[i].attributes["Longitude"];
+            var laty = result.features[i].attributes["Latitude"];
+            //var lonx = latlon.x;
+            //var laty = latlon.y;
             textContents += "," + lonx.toString() + "," + laty.toString();
             if (exportAllFields) {
               var idx = meshcodeIndex[mcode];
@@ -805,9 +985,11 @@ require([
           for (var i=0; i<exportFeatureCount; i++) {
             var mcode = result.features[i].attributes["Meshcode"];
             textContents += mcode;
-            var latlon = latlonFromMeshcode(mcode);
-            var lonx = latlon.x
-            var laty = latlon.y;
+            //var latlon = latlonFromMeshcode(mcode);
+            var lonx = result.features[i].attributes["Longitude"];
+            var laty = result.features[i].attributes["Latitude"];
+            //var lonx = latlon.x;
+            //var laty = latlon.y;
             textContents += "," + lonx.toString() + "," + laty.toString();
             if (exportAllFields) {
               var idx = meshcodeIndex[mcode];
@@ -839,11 +1021,119 @@ require([
       }
     }
     
+    function saveLoadedData() {
+      
+      meshcodeFieldNum = document.getElementById("fieldlist1").value;
+
+      var exportEncoding = "";
+      if (document.getElementById("exportUTF8BOMLoadedData").checked) exportEncoding = "utf8b";
+      if (document.getElementById("exportUTF8LoadedData").checked) exportEncoding = "utf8";
+      
+      var exportFileName = document.getElementById("exportFileNameTextLoadedData").value;
+      if (exportFileName == "") exportFileName = "meshdata.csv";
+      if (exportFileName.slice(-4).toLowerCase() != ".csv") exportFileName += ".csv";
+      
+      var textContents = "";
+      var newLine = "\n";
+          
+      // header
+      textContents = "MESHCODE,LONGITUDE,LATITUDE";
+      for (var n=0; n<fieldNames.length; n++){
+        textContents += "," + fieldNames[n].trim();
+      }
+      textContents += newLine;
+      
+      // contents
+      var tkyflag = document.getElementById("tkycoordinatesystems");
+      if (tkyflag.checked) {
+        // tky -> jgd
+        projection.load().then(function() {
+          var outSR = new SpatialReference({ wkid: 4326 });
+          var inSR = new SpatialReference({ wkid: 4301 });
+          var trans = projection.getTransformation(inSR, outSR);
+
+          for (var i=1; i<rawData.length; i++) {
+            var row = rawData[i].split(/,/);
+            var mcode = row[meshcodeFieldNum];
+
+            if (mcode.length >= 8 && parseInt(mcode, 10) > 0) {
+              var latlon = latlonFromMeshcode(mcode);
+              var lonx, laty;
+              lonx = latlon.x;
+              laty = latlon.y;
+              var graphic = new Graphic({
+                geometry: {
+                  type: "point",
+                  latitude: laty,
+                  longitude: lonx,
+                  spatialReference: inSR
+                }
+              });
+              var geometry2 = projection.project(graphic.geometry, outSR, trans);
+
+              textContents += mcode;
+              textContents += "," + geometry2.x.toString() + "," + geometry2.y.toString();
+              textContents += "," + rawData[i].replace(/\r?\n/g,'') + newLine;
+            }
+          }
+          
+          var blob;
+          if (exportEncoding == "utf8b") {
+            let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+          } else {
+            blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+          }
+          let downlink = document.createElement("a");
+          clearSketchGeometry();
+          downlink.href = URL.createObjectURL(blob);
+          downlink.download = exportFileName;
+          downlink.click();
+        });
+      } else {
+        for (var i=1; i<rawData.length; i++) {
+          var row = rawData[i].split(/,/);
+          var mcode = row[meshcodeFieldNum];
+
+          if (mcode.length >= 8 && parseInt(mcode, 10) > 0) {
+            var latlon = latlonFromMeshcode(mcode);
+            var lonx, laty;
+            lonx = latlon.x;
+            laty = latlon.y;
+
+            textContents += mcode;
+            textContents += "," + lonx.toString() + "," + laty.toString();
+            textContents += "," + rawData[i].replace(/\r?\n/g,'') + newLine;
+          }
+          
+        }
+        var blob;
+        if (exportEncoding == "utf8b") {
+          let utfBOM = new Uint8Array([0xEF, 0xBB, 0xBF]);
+          blob = new Blob([utfBOM, textContents], { type: "text/plain", endings: "native" });
+        } else {
+          blob = new Blob([textContents], { type: "text/plain", endings: "native" });
+        }
+        let downlink = document.createElement("a");
+        clearSketchGeometry();
+        downlink.href = URL.createObjectURL(blob);
+        downlink.download = exportFileName;
+        downlink.click();
+      }
+    }
+
 
     document.getElementById("closeActionPanelBtn").innerText = ACTIONPANELCLOSE;
     
     refreshColorRamps();
     selectRenderingMethod();
+    
+    
+    view.popup.on("trigger-action", function(event) {
+      if (event.action.id === "get-address") {
+        popupGetAddress();
+      }
+    });
 
 
 
@@ -855,7 +1145,6 @@ require([
     function isNullConvert(val1, val2) {
       return (val1 == null)?val2:val1;
     }
-    
     
     function drawFeaturesCheck() {
       var fcount = estimateLoadingFeatures();
@@ -873,7 +1162,7 @@ require([
         messDiv.innerText = CAUTION_OVER30000;
         var yesMessBtn = document.createElement("button");
         yesMessBtn.classList.add("esri-button--tertiary");
-        yesMessBtn.innerText = CAUTION_OVER30000_YES;
+        yesMessBtn.innerText = MESSAGE_YES;
         yesMessBtn.addEventListener("click", function() {
           messDiv.innerHTML = "";
           drawFeatures();
@@ -881,7 +1170,7 @@ require([
         messDiv.appendChild(yesMessBtn);
         var noMessBtn = document.createElement("button");
         noMessBtn.classList.add("esri-button--tertiary");
-        noMessBtn.innerText = CAUTION_OVER30000_NO;
+        noMessBtn.innerText = MESSAGE_NO;
         noMessBtn.addEventListener("click", function() {
           messDiv.innerHTML = "";
         });
@@ -890,6 +1179,35 @@ require([
       } else {
         drawFeatures();
       }
+    }
+    
+
+    function popupGetAddress() {
+      var geom = view.popup.selectedFeature.geometry;
+      if (geom.type == "point") {
+        var paramsLocator = { location: geom };
+      } else if (geom.type == "polygon") {
+        var centPoi = geom.centroid;
+        var paramsLocator = { location: centPoi };
+      }
+      locatorTask
+        .locationToAddress(paramsLocator)
+        .then(function(response) {
+          if (response.attributes["Type"] == "Country") {
+            view.popup.title = view.popup.content.title + "<br>" + POPUP_ADDRESS_NOTFOUND;
+          } else {
+            var addressStr = response.attributes["Region"]
+              + response.attributes["MetroArea"]
+              + response.attributes["City"]
+              + response.attributes["District"]
+              + response.attributes["Neighborhood"];
+            view.popup.title = view.popup.content.title + "<br>" + addressStr;
+          }
+        })
+        .catch(function(error) {
+          view.popup.title = view.popup.content.title + "<br>" + POPUP_ADDRESS_NOTFOUND;
+          console.log(error);
+        });
     }
     
     
@@ -929,6 +1247,11 @@ require([
       
       document.getElementById("exportFileNameText").value = document.getElementById("maptitle").value;
       
+      var minX = meshData[0].LONGITUDE;
+      var minY = meshData[0].LATITUDE;
+      var maxX = meshData[0].LONGITUDE;
+      var maxY = meshData[0].LATITUDE;
+      
       if (rendererCode < 8) {
         meshdataLayer.title = document.getElementById("maptitle").value;
         meshdataLayer.refresh();
@@ -938,12 +1261,14 @@ require([
           var nzfieldName = fieldNames[nzFieldNum];
           meshdataLayer.popupTemplate = {
             title: "MESHCODE: {Meshcode}",
-            content: vfieldName + ": {Value}<br>" + nzfieldName + ": {Nzvalue}"
+            content: vfieldName + ": {Value}<br>" + nzfieldName + ": {Nzvalue}",
+            actions: [{title: POPUP_GETADDRESS_BTN, id: "get-address", className: "esri-icon-search"}]
           };
         } else {
           meshdataLayer.popupTemplate = {
             title: "MESHCODE: {Meshcode}",
-            content: vfieldName + ": {Value}"
+            content: vfieldName + ": {Value}",
+            actions: [{title: POPUP_GETADDRESS_BTN, id: "get-address", className: "esri-icon-search"}]
           };
         }
         
@@ -959,30 +1284,62 @@ require([
             attributes: meshData[n]
           });
           graphics.push(graphic);
+          if (minX > meshData[n].LONGITUDE) minX = meshData[n].LONGITUDE;
+          if (maxX < meshData[n].LONGITUDE) maxX = meshData[n].LONGITUDE;
+          if (minY > meshData[n].LATITUDE) minY = meshData[n].LATITUDE;
+          if (maxY < meshData[n].LATITUDE) maxY = meshData[n].LATITUDE;
         }
+        
+        var tkyflag = document.getElementById("tkycoordinatesystems");
+        if (tkyflag.checked) {
+          // tky -> jgd
+          projection.load().then(function() {
+            var outSR = new SpatialReference({ wkid: 4326 });
+            var inSR = new SpatialReference({ wkid: 4301 });
+            var trans = projection.getTransformation(inSR, outSR);
+            graphics.forEach(function(graphic) {
+              graphic.geometry.spatialReference = inSR;
+              graphic.geometry = projection.project(graphic.geometry, outSR, trans);
+              graphic.attributes.LONGITUDE = graphic.geometry.x;
+              graphic.attributes.LATITUDE = graphic.geometry.y;
+            });
+          
+            const addEdits = {
+              addFeatures: graphics
+            };
       
-        const addEdits = {
-          addFeatures: graphics
-        };
+            applyEditsToLayer(addEdits, rendererCode);
+            meshdataLayer.legendEnabled = true;
+            meshdataLayer.refresh();
+          });
+        } else {
+          const addEdits = {
+            addFeatures: graphics
+          };
       
-        applyEditsToLayer(addEdits, rendererCode);
-        meshdataLayer.legendEnabled = true;
-        meshdataLayer.refresh();
+          applyEditsToLayer(addEdits, rendererCode);
+          meshdataLayer.legendEnabled = true;
+          meshdataLayer.refresh();
+        }
+        
       } else {
         meshdataPgLayer.title = document.getElementById("maptitle").value;
         meshdataPgLayer.refresh();
+
       
         var vfieldName = fieldNames[valueFieldNum];
         if (nzFieldNum != -1) {
           var nzfieldName = fieldNames[nzFieldNum];
           meshdataPgLayer.popupTemplate = {
             title: "MESHCODE: {Meshcode}",
-            content: vfieldName.trim() + ": {Value}<br>" + nzfieldName.trim() + ": {Nzvalue}"
+            content: vfieldName.trim() + ": {Value}<br>" + nzfieldName.trim() + ": {Nzvalue}",
+            actions: [{title: POPUP_GETADDRESS_BTN, id: "get-address", className: "esri-icon-search"}]
           };
         } else {
           meshdataPgLayer.popupTemplate = {
             title: "MESHCODE: {Meshcode}",
-            content: vfieldName.trim() + ": {Value}"
+            content: vfieldName.trim() + ": {Value}",
+            actions: [{title: POPUP_GETADDRESS_BTN, id: "get-address", className: "esri-icon-search"}]
           };
         }
         
@@ -1005,18 +1362,62 @@ require([
             attributes: meshData[n]
           });
           graphics.push(graphic);
+          if (minX > meshData[n].LONGITUDE) minX = meshData[n].LONGITUDE;
+          if (maxX < meshData[n].LONGITUDE) maxX = meshData[n].LONGITUDE;
+          if (minY > meshData[n].LATITUDE) minY = meshData[n].LATITUDE;
+          if (maxY < meshData[n].LATITUDE) maxY = meshData[n].LATITUDE;
         }
       
-        const addEdits = {
-          addFeatures: graphics
-        };
+        var tkyflag = document.getElementById("tkycoordinatesystems");
+        if (tkyflag.checked) {
+          // tky -> jgd
+          projection.load().then(function() {
+            var outSR = new SpatialReference({ wkid: 4326 });
+            var inSR = new SpatialReference({ wkid: 4301 });
+            var trans = projection.getTransformation(inSR, outSR);
+            graphics.forEach(function(graphic) {
+              graphic.geometry.spatialReference = inSR;
+              graphic.geometry = projection.project(graphic.geometry, outSR, trans);
+              graphic.attributes.LONGITUDE = graphic.geometry.extent.center.x;
+              graphic.attributes.LATITUDE = graphic.geometry.extent.center.y;
+            });
+
+            const addEdits = {
+              addFeatures: graphics
+            };
       
-        applyEditsToLayer(addEdits, rendererCode);
-        meshdataPgLayer.legendEnabled = true;
-        meshdataPgLayer.refresh();
+            applyEditsToLayer(addEdits, rendererCode);
+            meshdataPgLayer.legendEnabled = true;
+            meshdataPgLayer.refresh();
+          });
+        } else {
+          const addEdits = {
+            addFeatures: graphics
+          };
+      
+          applyEditsToLayer(addEdits, rendererCode);
+          meshdataPgLayer.legendEnabled = true;
+          meshdataPgLayer.refresh();
+        }
       }
       document.getElementById("messagezone").style.color = "";
       document.getElementById("messagezone").innerText = featuresLoaded.toString() + MESSAGE_FEATURESLOADED;
+      var centX = (maxX + minX) / 2.0;
+      var centY = (maxY + minY) / 2.0;
+      var targetPolygon = {
+        type: "polygon",
+        rings: [
+          [minX, minY, 0],
+          [minX, maxY, 0],
+          [maxX, maxY, 0],
+          [maxX, minY, 0],
+          [minX, minY, 0]
+        ]
+      };
+      var targetGraphic = new Graphic ({
+        geometry: targetPolygon
+      });
+      view.goTo({ target: targetGraphic });
     }
     
     function removeFeatures(renderer){
@@ -1050,7 +1451,6 @@ require([
                 .queryFeatures({
                   objectIds: objectIds
                 });
-            
               var sizeParams = selectRenderer(renderercode);
               let rendererResult = null;
             
@@ -1633,7 +2033,9 @@ require([
 
 
 if (window.File) {
-  document.getElementById("dropcsv").addEventListener("drop", onDrop, false);
+  document.getElementById("dropcsv").addEventListener("drop", function(event) { loadMappingFile(event, "drop"); }, false);
+  document.getElementById("dropcsv1").addEventListener("drop", function(event) { loadJoinFile(event, "drop", 1); }, false);
+  document.getElementById("dropcsv2").addEventListener("drop", function(event) { loadJoinFile(event, "drop", 2); }, false);
 } else {
   alert(FILEAPIERRORMESSAGE);
 }
@@ -1667,9 +2069,9 @@ function loadData() {
       laty = latlon.y;
       meshcodeIndex[row[meshcodeFieldNum]] = j;
 
-      var meshvalue = parseFloat(row[valueFieldNum]);
+      var meshvalue = parseFloat(delQuo(row[valueFieldNum]));
       if (nzFieldNum != -1) {
-        var nzvalue = parseFloat(row[nzFieldNum]);
+        var nzvalue = parseFloat(delQuo(row[nzFieldNum]));
         if (flagFiltering && filteringSliderObject.disabled == false && 
             flagFilteringNz && filteringSliderObjectNz.disabled == false) {
           if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1]) &&
@@ -1677,7 +2079,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    MESHCODE: delQuo(row[meshcodeFieldNum].toString()),
                     VALUE: meshvalue,
                     NZVALUE: nzvalue
             });
@@ -1692,7 +2094,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    MESHCODE: delQuo(row[meshcodeFieldNum].toString()),
                     VALUE: meshvalue,
                     NZVALUE: nzvalue
             });
@@ -1706,7 +2108,7 @@ function loadData() {
           meshData.push({
                   LATITUDE: laty,
                   LONGITUDE: lonx,
-                  MESHCODE: row[meshcodeFieldNum].toString(),
+                  MESHCODE: delQuo(row[meshcodeFieldNum].toString()),
                   VALUE: meshvalue,
                   NZVALUE: nzvalue
           });
@@ -1722,7 +2124,7 @@ function loadData() {
             meshData.push({
                     LATITUDE: laty,
                     LONGITUDE: lonx,
-                    MESHCODE: row[meshcodeFieldNum].toString(),
+                    MESHCODE: delQuo(row[meshcodeFieldNum].toString()),
                     VALUE: meshvalue,
                     NZVALUE: 0
             });
@@ -1734,7 +2136,7 @@ function loadData() {
           meshData.push({
                   LATITUDE: laty,
                   LONGITUDE: lonx,
-                  MESHCODE: row[meshcodeFieldNum].toString(),
+                  MESHCODE: delQuo(row[meshcodeFieldNum].toString()),
                   VALUE: meshvalue,
                   NZVALUE: 0
           });
@@ -1825,11 +2227,18 @@ function fieldRefresh() {
   }
 }
 
-function onDrop(event) {
-  var files = event.dataTransfer.files;
+function loadMappingFile(event, mode) {   // old name onDrop
+  var files;
+  if (mode == "drop") {
+    files = event.dataTransfer.files;
+    event.preventDefault();
+  } else if (mode == "select") {
+    var fileElem = document.getElementById("selectcsv");
+    files = fileElem.files;
+  }
+
   var addflag = document.getElementById("adddata");
   
-  event.preventDefault();
   if (!addflag.checked) {
     rawData = [];
   }
@@ -2010,9 +2419,9 @@ function calculateMinMaxValues() {
   
     for (var j=1; j<rawData.length; j++){
       var row = rawData[j].split(/,/);
-      var meshvalue = parseFloat(row[valueFieldNum]);
+      var meshvalue = parseFloat(delQuo(row[valueFieldNum]));
       if (nzFieldNum != -1) {
-        var nzvalue = parseFloat(row[nzFieldNum]);
+        var nzvalue = parseFloat(delQuo(row[nzFieldNum]));
         if (nzvalue > 0) {
           var normalizeValue = meshvalue / nzvalue;
           if (normalizedValueMin > normalizeValue) normalizedValueMin = normalizeValue;
@@ -2056,7 +2465,7 @@ function calculateNzMinMaxValues() {
   
     for (var j=1; j<rawData.length; j++){
       var row = rawData[j].split(/,/);
-      var nzvalue = parseFloat(row[nzFieldNum]);
+      var nzvalue = parseFloat(delQuo(row[nzFieldNum]));
       if (nzvalue > 0) {
         if (nzValueMin > nzvalue) nzValueMin = nzvalue;
         if (nzValueMax < nzvalue) nzValueMax = nzvalue;
@@ -2087,10 +2496,10 @@ function estimateLoadingFeatures() {
   
   for (var j=1; j<rawData.length; j++){
     var row = rawData[j].split(/,/);
-    if (row[meshcodeFieldNum].length >= 8 && parseInt(row[meshcodeFieldNum], 10) > 0) { // more than 8 digits and non-negative
-      var meshvalue = parseFloat(row[valueFieldNum]);
+    if (delQuo(row[meshcodeFieldNum]).length >= 8 && parseInt(delQuo(row[meshcodeFieldNum]), 10) > 0) { // more than 8 digits and non-negative
+      var meshvalue = parseFloat(delQuo(row[valueFieldNum]));
       if (nzFieldNum != -1) {
-        var nzvalue = parseFloat(row[nzFieldNum]);
+        var nzvalue = parseFloat(delQuo(row[nzFieldNum]));
         if (flagFiltering && filteringSliderObject.disabled == false && 
             flagFilteringNz && filteringSliderObjectNz.disabled == false) {
           if (filteringCheckNZ(meshvalue, nzvalue, filteringSliderObject.values[0], filteringSliderObject.values[1]) &&
@@ -2127,6 +2536,7 @@ function closeActionPanel() {
   var panel = document.getElementById("actions");
   var topelem = document.getElementById("dropcsv");
   if (btn.innerText == ACTIONPANELCLOSE) {
+    panel.scrollTop = 0;
     panel.style.height = "42px";
     btn.className = "esri-button";
     btn.style.height = "32px";
@@ -2135,6 +2545,7 @@ function closeActionPanel() {
     btn.innerText = ACTIONPANELOPEN;
     panel.insertBefore(btn, topelem);
   } else if (btn.innerText == ACTIONPANELOPEN) {
+    var viewDiv = document.getElementById("viewDiv");
     panel.style.height = "";
     panel.style.overflow = "visible";
     btn.className = "esri-button--tertiary";
@@ -2142,6 +2553,10 @@ function closeActionPanel() {
     btn.style.marginBottom = "";
     btn.style.height = "";
     panel.appendChild(btn);
+    if ((viewDiv.getBoundingClientRect().height - panel.getBoundingClientRect().height) < 40) {
+      panel.style.overflowY = "scroll";
+      panel.style.height = (viewDiv.getBoundingClientRect().height - 40).toString() + "px";
+    }
   }
 }
 
@@ -2159,6 +2574,16 @@ function clearActionPanelSettingsNz() {
   flagNz.checked = false;
   checkNzFilterFlag();
 }
+
+function delQuo(str) {
+  if (typeof str !== "undefined") {
+    var str0 = str.replace(/^"/,"").replace(/"$/,"");
+  } else {
+    var str0 = "";
+  }
+  return str0;
+}
+
 
 function latlonFromMeshcode(meshcodestr) {
   if (meshcodestr.length >= 8 && parseInt(meshcodestr, 10) > 0) { // more than 8 digits and non-negative
@@ -2239,6 +2664,335 @@ function latlonFromMeshcode(meshcodestr) {
   }
   var returnVal = { "x": lonx, "y": laty };
   return returnVal;
+}
+
+
+function showSidePanel() {
+  var spanel = document.getElementById("sidePanelDiv");
+  spanel.style.display = "block";
+  var spanelbtn = document.getElementById("showSidePanelBtn");
+  spanelbtn.style.display = "none";
+}
+
+
+function hideSidePanel() {
+  var spanel = document.getElementById("sidePanelDiv");
+  spanel.style.display = "none";
+  var spanelbtn = document.getElementById("showSidePanelBtn");
+  spanelbtn.style.display = "inline";
+}
+
+function loadJoinFile(event, mode, fileNum) {
+  var files;
+  var f;
+  if (mode == "drop") {
+    files = event.dataTransfer.files;
+    if (files.length > 1) {
+      alert(CAUTION_CANNOT_LOAD_MULTIPLEFILES_IN_JOIN);
+      return false;
+    }
+    event.preventDefault();
+    f = files[0];
+  } else if (mode == "select") {
+    var elemIds = ["selectcsv1", "selectcsv2"];
+    var fileElem = document.getElementById(elemIds[fileNum-1]);
+    f = fileElem.files[0];
+  }
+
+  var reader = new FileReader();
+  
+  if (f.name.match(/csv$/m) || f.name.match(/txt$/m)) {
+    var fname = f.name;
+    reader.onload = function (evt) {
+      // file loaded
+      var rows = evt.target.result.split(/\n/);
+      var colNames = rows[0].split(/,/); // col names
+      var fieldListJoin;
+      if (fileNum == 1) {
+        joinFieldNames1 = rows[0].split(/,/);
+        joinRawData1 = evt.target.result.split(/\n/);
+        document.getElementById("estatdatajoin1").checked = false;
+        fieldListJoin = document.getElementById("fieldlistjoin1");
+      } else if (fileNum == 2) {
+        joinFieldNames2 = rows[0].split(/,/);
+        joinRawData2 = evt.target.result.split(/\n/);
+        document.getElementById("estatdatajoin2").checked = false;
+        fieldListJoin = document.getElementById("fieldlistjoin2");
+      }
+      
+      while (fieldListJoin.firstChild){ fieldListJoin.removeChild(fieldListJoin.firstChild); }
+        
+      for (var k=0; k<colNames.length; k++) {
+        let option1 = document.createElement('option');
+        option1.setAttribute('value', k);
+        option1.innerHTML = colNames[k].substr(0,16);
+        fieldListJoin.appendChild(option1);
+      }
+        
+      // set default field
+      if (fileNum == 1) {
+        joinMeshcodeFieldNum1 = 0;
+        fieldListJoin.options[joinMeshcodeFieldNum1].selected = true;
+        document.getElementById("joinfilename1").innerText = fname;
+        document.getElementById("numofrecordsjoin1").innerText = joinRawData1.length.toString();
+      } else if (fileNum == 2) {
+        joinMeshcodeFieldNum2 = 0;
+        fieldListJoin.options[joinMeshcodeFieldNum2].selected = true;
+        document.getElementById("joinfilename2").innerText = fname;
+        document.getElementById("numofrecordsjoin2").innerText = joinRawData2.length.toString();
+      }
+    }
+    reader.readAsText(f, 'sjis');
+  }
+  event.preventDefault();
+}
+
+function fieldRefreshJoin(fileNum) {
+  var estatflag;
+  var fieldListJoin;
+  if (fileNum == 1) {
+    if (joinRawData1.length == 0) {
+      return false;
+    }
+    estatflag = document.getElementById("estatdatajoin1");
+    fieldListJoin = document.getElementById("fieldlistjoin1");
+  }
+  if (fileNum == 2) {
+    if (joinRawData2.length == 0) {
+      return false;
+    }
+    estatflag = document.getElementById("estatdatajoin2");
+    fieldListJoin = document.getElementById("fieldlistjoin2");
+  }
+
+  var colnameRow = 0;
+  if (estatflag.checked) {
+    // field name in 2nd row
+    colnameRow = 1;
+  } else {
+    // field name in 1st row
+    colnameRow = 0;
+  }
+
+  while (fieldListJoin.firstChild){ fieldListJoin.removeChild(fieldListJoin.firstChild); }
+  
+  var colNames;
+  if (fileNum == 1) {
+    colNames = joinRawData1[colnameRow].split(/,/);
+    joinFieldNames1 = joinRawData1[colnameRow].split(/,/);
+  } else if (fileNum == 2) {
+    colNames = joinRawData2[colnameRow].split(/,/);
+    joinFieldNames2 = joinRawData2[colnameRow].split(/,/);
+  }
+  for (var k=0; k<colNames.length; k++) {
+    if (colNames[k] == "") {
+      if (fileNum == 1) {
+        colNames[k] = joinRawData1[0].split(/,/)[k];
+        joinFieldNames1[k] = colNames[k];
+      } else if (fileNum == 2){
+        colNames[k] = joinRawData2[0].split(/,/)[k];
+        joinFieldNames2[k] = colNames[k];
+      }
+    }
+    let option1 = document.createElement('option');
+    option1.setAttribute('value', k);
+    option1.innerHTML = colNames[k].substr(0,18);
+    fieldListJoin.appendChild(option1);
+
+    // set default field
+    if (fileNum == 1) {
+      joinMeshcodeFieldNum1 = 0;
+      fieldListJoin.options[joinMeshcodeFieldNum1].selected = true;
+    } else if (fileNum == 2) {
+      joinMeshcodeFieldNum2 = 0;
+      fieldListJoin.options[joinMeshcodeFieldNum2].selected = true;
+    }
+  }
+}
+
+function joinMeshData() {
+  var mode = "leftouter";
+  var joinMethodFlag = document.getElementById("joinMethodInner");
+  if (joinMethodFlag.checked) mode = "inner";
+
+  showMessageJoin("", "");
+  if (joinRawData1.length == 0) {
+    showMessageJoin(CAUTION_NOJOINDATA1, "red");
+    return false;
+  }
+  if (joinRawData2.length == 0) {
+    showMessageJoin(CAUTION_NOJOINDATA2, "red");
+    return false;
+  }
+  
+  var meshcodeIndexJoin2 = new Array();
+  var startRow1 = 1;
+  var startRow2 = 1;
+  joinMeshcodeFieldNum1 = document.getElementById("fieldlistjoin1").value;
+  joinMeshcodeFieldNum2 = document.getElementById("fieldlistjoin2").value;
+  var estatflag1 = document.getElementById("estatdatajoin1");
+  var estatflag2 = document.getElementById("estatdatajoin2");
+  
+  if (estatflag1.checked) startRow1 = 2;
+  if (estatflag2.checked) startRow2 = 2;
+  var joinResultData = [];
+  var joinResultFieldNames = [];
+  
+  for (var i=0; i<joinFieldNames1.length; i++) {
+    joinResultFieldNames.push(joinFieldNames1[i]);
+  }
+  for (var i=0; i<joinFieldNames2.length; i++) {
+    if (i != joinMeshcodeFieldNum2) joinResultFieldNames.push(joinFieldNames2[i]);
+  }
+  
+  joinResultData.push(joinResultFieldNames.join(","));
+  
+  for (var i=startRow2; i<joinRawData2.length; i++) {
+    var row = joinRawData2[i].split(",");
+    var mcode2 = row[joinMeshcodeFieldNum2];
+    if (mcode2 != "") meshcodeIndexJoin2[mcode2] = i;
+  }
+  
+  var joinedCount = 0;
+  
+  if (mode == "inner") {
+    for (var k=startRow1; k<joinRawData1.length; k++) {
+      var resultRow = "";
+      var row = joinRawData1[k].split(",");
+      var mcode1 = row[joinMeshcodeFieldNum1];
+      if (mcode1 in meshcodeIndexJoin2) {
+        resultRow += joinRawData1[k].replace("\r","").replace("\n","");
+        var mcode2 = meshcodeIndexJoin2[mcode1];
+        var row2 = joinRawData2[mcode2].split(",");
+        for (var j=0; j<row2.length; j++) {
+          if (j != joinMeshcodeFieldNum2) resultRow += "," + row2[j];
+        }
+        joinResultData.push(resultRow);
+        joinedCount++;
+      }
+    }
+  } else if (mode == "leftouter") {
+    for (var k=startRow1; k<joinRawData1.length; k++) {
+      var resultRow = "";
+      var row = joinRawData1[k].split(",");
+      var mcode1 = row[joinMeshcodeFieldNum1];
+      resultRow += joinRawData1[k].replace("\r","").replace("\n","");
+      if (mcode1 in meshcodeIndexJoin2) {
+        var mcode2 = meshcodeIndexJoin2[mcode1];
+        var row2 = joinRawData2[mcode2].split(",");
+        for (var j=0; j<row2.length; j++) {
+          if (j != joinMeshcodeFieldNum2) resultRow += "," + row2[j];
+        }
+        joinedCount++;
+      } else {
+        for (var j=0; j<joinFieldNames2.length; j++) {
+          if (j != joinMeshcodeFieldNum2) resultRow += ",";
+        }
+      }
+      joinResultData.push(resultRow);
+    }
+  }
+  
+  
+  showMessageJoin(joinedCount.toString() + JOINEDMESSAGE_LOADMAPYESNO, "");
+  var messDiv = document.getElementById("messagezonejoin");
+  var yesMessBtn = document.createElement("button");
+  yesMessBtn.classList.add("esri-button--tertiary");
+  yesMessBtn.innerText = MESSAGE_YES;
+  yesMessBtn.addEventListener("click", function() {
+    messDiv.innerHTML = "";
+    loadJoinedData(joinResultData, joinResultFieldNames);
+  });
+  messDiv.appendChild(yesMessBtn);
+  var noMessBtn = document.createElement("button");
+  noMessBtn.classList.add("esri-button--tertiary");
+  noMessBtn.innerText = MESSAGE_NO;
+  noMessBtn.addEventListener("click", function() {
+    messDiv.innerHTML = "";
+  });
+  messDiv.appendChild(noMessBtn);
+  
+}
+
+function showMessageJoin(message, colorname) {
+  var messDiv = document.getElementById("messagezonejoin");
+  messDiv.style.color = colorname;
+  messDiv.innerText = message;
+}
+
+function selectFileDialog(fileNum) {
+  if (fileNum == 1) document.getElementById("selectcsv1").click();
+  if (fileNum == 2) document.getElementById("selectcsv2").click();
+  if (fileNum == 3) document.getElementById("selectcsv").click();
+}
+
+function loadJoinedData(data, fnames) {
+  var addflag = document.getElementById("adddata");
+  addflag.checked = false;
+  rawData = [];
+  clearActionPanelSettings();
+  clearActionPanelSettingsNz();
+  
+  var tempFileName = "joineddata.csv";
+  document.getElementById("displayedfilename").innerText = tempFileName;
+  var colNames = fnames;
+  fieldNames = fnames;
+  rawData = data;
+  document.getElementById("numofrecords").innerText = rawData.length.toString();
+  document.getElementById("numoffields").innerText = colNames.length.toString();
+  document.getElementById("estatdata").checked = false;
+  
+  document.getElementById("maptitle").value = "joineddata";
+  
+  let fieldList1 = document.getElementById("fieldlist1");
+  let fieldList2 = document.getElementById("fieldlist2");
+  let fieldList3 = document.getElementById("fieldlist3");
+  
+  while (fieldList1.firstChild){ fieldList1.removeChild(fieldList1.firstChild); }
+  while (fieldList2.firstChild){ fieldList2.removeChild(fieldList2.firstChild); }
+  while (fieldList3.firstChild){ fieldList3.removeChild(fieldList3.firstChild); }
+  
+  let nulloption = document.createElement('option');
+  nulloption.setAttribute('value', -1);
+  nulloption.innerHTML = "----";
+  fieldList3.appendChild(nulloption);
+  
+  for (var k=0; k<colNames.length; k++) {
+    let option1 = document.createElement('option');
+    option1.setAttribute('value', k);
+    option1.innerHTML = colNames[k].substr(0,16);
+    fieldList1.appendChild(option1);
+    let option2 = document.createElement('option');
+    option2.setAttribute('value', k);
+    option2.innerHTML = colNames[k].substr(0,16);
+    fieldList2.appendChild(option2);
+    let option3 = document.createElement('option');
+    option3.setAttribute('value', k);
+    option3.innerHTML = colNames[k].substr(0,16);
+    fieldList3.appendChild(option3);
+  }
+  
+  // set default field
+  meshcodeFieldNum = 0;
+  valueFieldNum = 1;
+  nzFieldNum = 0; // -1 means not selected
+  
+  fieldList1.options[meshcodeFieldNum].selected = true;
+  fieldList2.options[valueFieldNum].selected = true;
+  fieldList3.options[nzFieldNum].selected = true;
+}
+
+function changeExportPanel() {
+  var div1 = document.getElementById("exportDivDisplayedData");
+  var div2 = document.getElementById("exportDivLoadedData");
+  var divselect = document.getElementById("exportTypeSelect");
+  if (divselect.value == "displayeddata") {
+    div1.style.display = "inline";
+    div2.style.display = "none";
+  } else if (divselect.value == "loadeddata") {
+    div1.style.display = "none";
+    div2.style.display = "inline";
+  }
 }
 
 
