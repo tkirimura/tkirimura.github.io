@@ -4,7 +4,8 @@
 
 ## ツール
 
-[MeshDataView3D](https://arcg.is/0PLz9S) 日本の地域メッシュ単位の統計データを、気軽に可視化するツールです。主にArcGIS API for JavaScriptを使っています。
-[MMM](http://www.tkirimura.com/mmm/) 1970年1月1日以降の任意の年月日の市区町村単位のShapeファイルと、2時点間の市区町村の対応表を出力するツールです。最近更新できていませんが・・・。
+-[MeshDataView3D](https://arcg.is/0PLz9S) 日本の地域メッシュ単位の統計データを、気軽に可視化するツールです。主にArcGIS API for JavaScriptを使っています。
+
+-[MMM](http://www.tkirimura.com/mmm/) 1970年1月1日以降の任意の年月日の市区町村単位のShapeファイルと、2時点間の市区町村の対応表を出力するツールです。最近更新できていませんが・・・。
 
 
