@@ -28,3 +28,4 @@
 ### ダウンロードはこちらから
 [ハフモデル分析ツール](./huffmodel.pyt) 拡張子がpytのPythonツールボックス形式です。右クリックして保存してください。
 
+(c) Takashi Kirimura
