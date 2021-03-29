@@ -19,3 +19,6 @@
 
 ここに置いてあるツール・データ等は、特に明示しない限り、桐村 喬が著作権を有しています。なお、ツール・データ等を使用したことによる損害等については一切負いません。
 
+## 作成者について
+
+桐村　喬です。大学教員をしています。詳細は[researchmap](https://researchmap.jp/kirimura)や[ResearchGate](https://www.researchgate.net/profile/Takashi-Kirimura)をどうぞ。
