@@ -15,7 +15,7 @@
 
 3. [ツイッターデータからみたCOVID-19の感染拡大にともなう「行動変容」の地理的特徴](http://www.kokon.co.jp/book/b516912.html) 地理65-7、2020。
 
-4. [人々の移動状況に関する時系列データとしての位置情報付きTwitterデータの活用](https://drive.google.com/file/d/1zQtEd5c0u7-4Rck_vs_z3LVDkj9q1Sah/view?usp=sharing)地理情報システム学会講演論文集29、2020。
+4. [人々の移動状況に関する時系列データとしての位置情報付きTwitterデータの活用](https://drive.google.com/file/d/1zQtEd5c0u7-4Rck_vs_z3LVDkj9q1Sah/view?usp=sharing) 地理情報システム学会講演論文集29、2020。
 
 5. [Twitterユーザーの1日単位の市区町村内移動ユーザー率マップ](https://arcg.is/1azvWS)
 
