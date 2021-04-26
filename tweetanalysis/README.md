@@ -19,9 +19,9 @@
 
 4. [人々の移動状況に関する時系列データとしての位置情報付きTwitterデータの活用](https://drive.google.com/file/d/1zQtEd5c0u7-4Rck_vs_z3LVDkj9q1Sah/view?usp=sharing) 地理情報システム学会講演論文集29、2020。
 
-5. [Twitterユーザーの1日単位の市区町村内移動ユーザー率マップ](https://arcg.is/1azvWS)
+5. [Twitterユーザーの1日単位の市区町村内移動ユーザー率マップ](https://arcg.is/1azvWS) 2020年公開。
 
-6. [10+1 website WebGIS・SNS・ビッグデータが描く都市の諸相](https://www.10plus1.jp/monthly/2016/11/issue-03.php)
+6. [10+1 website WebGIS・SNS・ビッグデータが描く都市の諸相](https://www.10plus1.jp/monthly/2016/11/issue-03.php) 2016年公開。
 
 7. [全国レベルでみたジオタグ付きツイートに用いられる地名の空間分布](http://www.csis.u-tokyo.ac.jp/wp-content/uploads/2020/12/days20D12.pdf) CSIS DAYS 2020研究アブストラクト集、2020。（藤原氏、平岡氏との共同発表）
 
