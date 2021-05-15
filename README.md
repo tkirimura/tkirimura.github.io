@@ -1,6 +1,6 @@
 # このページについて
 
-このページには、主にGIS（特にArcGIS）関連のいろいろなものを置いていく予定です（他のところに散在しているものも含めて）。リンク集的になるかもしれません。
+このページには、主にGIS（特にArcGIS）関連のいろいろなものを置いていく予定です（他のところに散在しているものも含めて）。リンク集的になるかもしれません。プロフィール的なものとして、別のところに古いブログ形式のサイトがありますが、近いうちに別サイトを設けてそちらに移行予定です。
 
 ---
 ## ツール
@@ -22,3 +22,4 @@
 ## 作成者
 
 桐村　喬です。大学教員をしています。詳細は[researchmap](https://researchmap.jp/kirimura)や[ResearchGate](https://www.researchgate.net/profile/Takashi-Kirimura)をどうぞ。
+Twitterアカウントは[こちら](https://twitter.com/tkirimura)。
