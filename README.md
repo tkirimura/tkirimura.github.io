@@ -5,7 +5,7 @@
 ---
 ## ツール
 
-[MeshDataView3D](https://arcg.is/0PLz9S) 日本の地域メッシュ単位の統計データを、気軽に可視化するツールです。主にArcGIS API for JavaScriptを使っています。
+[MeshDataView3D](https://arcg.is/0PLz9S) 日本の地域メッシュ単位の統計データを、気軽に可視化するツールです。主にArcGIS API for JavaScriptを使っています。これについて解説した[論文](https://doi.org/10.4157/ejgeo.16.176)が出ました。
 
 [ハフモデル分析ツール for ArcGIS Pro](./huffmodel_agpro/) ArcGIS Pro上で動作する、ハフモデルでごく簡単に分析するツールです。授業で使うことを目的に作ったものなので、それ以外の用途ではあまり正確ではないかもしれません。結果については保証できません。
 
