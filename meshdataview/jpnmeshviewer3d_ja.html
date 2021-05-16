@@ -374,7 +374,6 @@ var joinFieldNames2 = [];
 var joinMeshcodeFieldNum1 = 0;
 var joinMeshcodeFieldNum2 = 0;
 
-
 const ACTIONPANELOPEN = "描画設定を開く";
 const ACTIONPANELCLOSE = "描画設定を閉じる";
 const MESSAGE_FEATURESWILLBELOADED = " フィーチャが読み込まれます.";
@@ -749,7 +748,11 @@ require([
       if ((event.height - actDiv.getBoundingClientRect().height) < 60) {
         var btn = document.getElementById("closeActionPanelBtn");
         if (btn.innerText == ACTIONPANELCLOSE) {
-          actDiv.style.overflowY = "scroll";
+          if (checkTabletOS() == "iPadOS") {
+            actDiv.style.overflowY = "auto";
+          } else {
+            actDiv.style.overflowY = "scroll";
+          }
           actDiv.style.height = (event.height - 60).toString() + "px";
         }
       } else {
@@ -2047,6 +2050,14 @@ if (window.File) {
 }
 
 
+function checkTabletOS() {
+  const ua = navigator.userAgent;
+  if (/ipad|macintosh/.test(ua) && 'ontouchend' in document) {
+    return "iPadOS";
+  }
+  return "other";
+}
+
 function loadData() {
   // rawData -> meshData
   meshData = [];
@@ -2378,7 +2389,11 @@ function checkActionPanelSize() {
   if ((viewDiv.getBoundingClientRect().height - actDiv.getBoundingClientRect().height) < 60) {
     var btn = document.getElementById("closeActionPanelBtn");
     if (btn.innerText == ACTIONPANELCLOSE) {
-      actDiv.style.overflowY = "scroll";
+      if (checkTabletOS() == "iPadOS") {
+        actDiv.style.overflowY = "auto";
+      } else {
+        actDiv.style.overflowY = "scroll";
+      }
       actDiv.style.height = (viewDiv.getBoundingClientRect().height - 60).toString() + "px";
     }
   } else {
