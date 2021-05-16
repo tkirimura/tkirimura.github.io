@@ -2048,7 +2048,7 @@ if (window.File) {
 
 function checkTabletOS() {
   const ua = navigator.userAgent;
-  if (/ipad|macintosh/.text(ua) && 'ontouchend' in document) {
+  if (/ipad|macintosh/.test(ua) && 'ontouchend' in document) {
     return "iPadOS";
   }
   return "other";
@@ -2388,6 +2388,7 @@ function checkActionPanelSize() {
       if (checkTabletOS() == "iPadOS") {
         actDiv.style.overflowY = "auto";
       } else {
+        console.log("other");
         actDiv.style.overflowY = "scroll";
       }
       actDiv.style.height = (viewDiv.getBoundingClientRect().height - 60).toString() + "px";
