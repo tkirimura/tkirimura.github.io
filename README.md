@@ -22,4 +22,4 @@
 ## 作成者
 
 桐村　喬です。大学教員をしています。詳細は[researchmap](https://researchmap.jp/kirimura)や[ResearchGate](https://www.researchgate.net/profile/Takashi-Kirimura)をどうぞ。
-Twitterアカウントは[こちら](https://twitter.com/tkirimura)。
+X（Twitter）アカウントは[こちら](https://twitter.com/tkirimura)。
