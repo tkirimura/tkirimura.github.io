@@ -1,8 +1,9 @@
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>4D Time Machine</title>
+    <title>Kobe Time Machine</title>
 
     <script type="module" src="https://js.arcgis.com/calcite-components/2.5.1/calcite.esm.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.5.1/calcite.css" />
@@ -31,6 +32,7 @@
 
     <script>
       require([
+        "esri/config",
         "esri/layers/GraphicsLayer",
         "esri/WebScene",
         "esri/views/SceneView",
@@ -39,6 +41,7 @@
         "esri/layers/support/SceneModifications",
         "esri/core/reactiveUtils"
       ], (
+        esriConfig,
         GraphicsLayer,
         WebScene,
         SceneView,
@@ -47,6 +50,8 @@
         SceneModifications,
         reactiveUtils
       ) => {
+        esriConfig.apiKey = "AAPK1bc66bd7ab694caf855a998967dd0754Syg_OFGiW296hObPNffFIYSCI8gZWGY2hjrELdpgy3SYNDdg6aJqoVfUZdcsdi50";
+        
         // Load webscene with IntegratedMeshLayer
         const webscene = new WebScene({
           portalItem: {
@@ -278,15 +283,6 @@
         // update the IntegratedMesh with the modifications
         function updateIntegratedMesh() {
           // create the modification collection with the geometry and attribute from the graphicsLayer
-//          let modifications = new SceneModifications(
-//            graphicsLayer.graphics.toArray().map((graphic) => {
-//              return new SceneModification({
-//                geometry: graphic.geometry,
-//                type: graphic.attributes.modificationType
-//              });
-//            })
-//          );
-
           let modifications1 = new SceneModifications(
             graphicsLayer.graphics.toArray().map((graphic) => {
               return new SceneModification({
@@ -339,10 +335,17 @@
   <body>
     <div id="viewDiv">
       <div id="tools" class="esri-widget">
+        <h2>KOBE Time Machine</h2>
+        <calcite-label layout="inline">
+        <calcite-icon icon="number-circle-1-f" scale="m" /></calcite-icon>
         <p>範囲を決めてください.</p>
-        <button id="createModification" class="esri-button esri-button--secondary esri-button--half">作成</button>
+        </calcite-label>
+        <button id="createModification" class="esri-button esri-button--half">範囲の設定</button>
 <br><br>
-        <p>表示する時点を選んでください.</p>
+        <calcite-label layout="inline">
+        <calcite-icon icon="number-circle-2-f" scale="m" /></calcite-icon>
+        <p>表示する年を選んでください.</p>
+        </calcite-label>
         <div class="option">
           <input type="radio" name="modificationType" id="modification-layer1" value="1" />
           <label for="modification-layer1"><b>2021（令和3）年 </b></label>
@@ -373,7 +376,8 @@
           text="表示を更新中."
           type="indeterminate"
         ></calcite-loader>
-<br><br>
+        <br>
+        <p>(c) Takashi Kirimura</p>
       </div>
     </div>
   </body>
