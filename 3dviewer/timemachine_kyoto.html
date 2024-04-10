@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>KYOTO Time Machine</title>
+
+    <script type="module" src="https://js.arcgis.com/calcite-components/2.5.1/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.5.1/calcite.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #tools {
+        display: none;
+        padding: 0.5em 1em;
+      }
+
+      .option {
+        margin: 5px 0;
+      }
+    </style>
+
+    <script>
+      require([
+        "esri/config",
+        "esri/layers/GraphicsLayer",
+        "esri/WebScene",
+        "esri/views/SceneView",
+        "esri/widgets/Sketch/SketchViewModel",
+        "esri/layers/support/SceneModification",
+        "esri/layers/support/SceneModifications",
+        "esri/core/reactiveUtils"
+      ], (
+        esriConfig,
+        GraphicsLayer,
+        WebScene,
+        SceneView,
+        SketchViewModel,
+        SceneModification,
+        SceneModifications,
+        reactiveUtils
+      ) => {
+        esriConfig.apiKey = "AAPK1bc66bd7ab694caf855a998967dd0754Syg_OFGiW296hObPNffFIYSCI8gZWGY2hjrELdpgy3SYNDdg6aJqoVfUZdcsdi50";
+        
+        // Load webscene with IntegratedMeshLayer
+        const webscene = new WebScene({
+          portalItem: {
+            id: "813aa2cd7a6a43cc93dbb37f8f5d1467"
+          }
+        });
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: webscene
+        });
+
+        let imLayer = {};
+        let imLayer1975;
+        let imLayer1985;
+        let imLayer1995;
+        let imLayer2021;
+        let defaultLayer = "4";
+        let layerList = {
+          "1": "2020（令和2）年",
+          "2": "1987（昭和62）年",
+          "3": "1961（昭和36）年",
+          "4": "1946（昭和21）年"
+          };
+        
+
+        // Create graphicsLayer to store modifications and add to the map
+        const graphicsLayer = new GraphicsLayer();
+        view.map.add(graphicsLayer);
+
+        // polygon symbol used for sketching the modifications
+        const sketchSymbol = {
+          type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+          symbolLayers: [
+            {
+              type: "fill", // autocasts as new FillSymbol3DLayer()
+              material: {
+                color: [255, 255, 255, 0.8]
+              },
+              outline: {
+                size: "3px",
+                color: [82, 82, 122, 1]
+              }
+            }
+          ]
+        };
+
+        // polygon symbol to symbolize the modifications
+        const modificationSymbol = {
+          type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+          symbolLayers: [
+            {
+              type: "line", // autocasts as new LineSymbol3DLayer()
+              material: {
+                color: [0, 0, 0, 0]
+              },
+              size: "7px"
+            }
+          ]
+        };
+
+        /*
+         * define the SketchViewModel and pass in the symbol for sketching polygon
+         * set updateOnGraphicClick to false to be able to start the update process
+         * depending on the defined modification.
+         * clip, mask --> z-value is not used
+         * replace --> z-value is used to define the flatten height
+         */
+        const sketchViewModel = new SketchViewModel({
+          layer: graphicsLayer,
+          view: view,
+          polygonSymbol: sketchSymbol,
+          updateOnGraphicClick: false,
+          defaultCreateOptions: {
+            mode: "click"
+          }
+        });
+
+        // Add click event to the button to start sketch a polygon
+        const createModificationButton = document.getElementById("createModification");
+        createModificationButton.addEventListener("click", (event) => {
+          event.target.classList.add("esri-button--secondary");
+          sketchViewModel.create("polygon");
+        });
+
+        // listen to changes on the modificationType
+        const modificationType = document.getElementsByName("modificationType");
+        for (let i = 0, length = modificationType.length; i < length; i++) {
+          modificationType[i].onclick = modificationTypeChanged;
+        }
+
+        /*
+         * listen on sketch-create
+         * - indicate on the button that the create operation is finished
+         * - add the modificationType as attribute
+         * - update the IntegratedMesh with the modifications
+         * - start the update graphic and enable the Z only on type "replace"
+         */
+        sketchViewModel.on("create", (event) => {
+          if (event.state === "complete") {
+            createModificationButton.classList.remove("esri-button--secondary");
+            updateModificationType(event.graphic, getSelectedModificationType());
+            updateIntegratedMesh();
+            sketchViewModel.update(event.graphic, {
+              enableZ: true
+            });
+          }
+        });
+
+        /*
+         * listen on sketch-update
+         * - set the radio-button-modification-type accordingly to the attribute
+         * - when the graphic update process is completed update the IntegratedMesh modifications
+         */
+        sketchViewModel.on("update", (event) => {
+          if (event.state === "start") {
+            document.getElementById("modification-layer" + event.graphics[0].attributes.modificationType).checked = true;
+          }
+          updateIntegratedMesh();
+          setVisiblity(); //imLayer1995.visible = true;
+        });
+
+        // listen to sketch-delete and update the IntegratedMesh modifications
+        sketchViewModel.on("delete", (event) => {
+          for (let key in layerList) {
+            if (key == defaultLayer) {
+              imLayer[key].visible = true;
+            } else {
+              imLayer[key].visible = false;
+            }
+          }
+          updateIntegratedMesh();
+        });
+
+        view.when(() => {
+          // get the IntegratedMesh-Layer from the WebScene
+          for (let key in layerList) {
+            imLayer[key] = webscene.layers.find((layer) => {
+              return layer.title === layerList[key];
+            });
+          }
+
+          // listen to click events to detect if the user would like to update a graphic
+          view.on("click", (event) => {
+            view
+              .hitTest(event, {
+                include: [graphicsLayer],
+                exclude: [view.map.ground]
+              })
+              .then(processSelectedGraphic);
+          });
+
+          // add the ui
+          view.ui.add("tools", "top-right");
+          document.getElementById("tools").style.display = "block";
+
+          // display the rendering status of the IntegratedMeshLayer
+          const calciteLoader = document.getElementById("calciteLoader");
+          view.whenLayerView(imLayer[defaultLayer]).then((lyrView) => {
+            reactiveUtils.watch(
+              () => lyrView.updating,
+              (updating) => {
+                if (updating) {
+                  calciteLoader.style.display = "block";
+                } else {
+                  calciteLoader.style.display = "none";
+                }
+              }
+            );
+          });
+        });
+
+        /*
+         * listen to click events to detect if the user would like to update a graphic
+         * - with hittest get the selected graphic
+         * - only if there is no create or update ongoing
+         * - start the update process dependent on the modificationType -> "replace" with enableZ
+         */
+        function processSelectedGraphic(hitTestResult) {
+          if (!sketchViewModel.activeTool) {
+            if (hitTestResult.results.length > 0) {
+              const graphicToModify = hitTestResult.results[0].graphic;
+              sketchViewModel.update(graphicToModify, {
+                enableZ: true
+              });
+            }
+          }
+        }
+
+        // Get the selected modificationType from radio-button-ui
+        function getSelectedModificationType() {
+          for (let i = 0; i < modificationType.length; i++) {
+            if (modificationType[i].checked) {
+              return modificationType[i].value;
+            }
+          }
+        }
+
+        // update the attribute and modification on radio-button click
+        function modificationTypeChanged() {
+          let item = sketchViewModel.updateGraphics.items[0];
+          if (item) {
+            try {
+              updateModificationType(item, this.value);
+              sketchViewModel.update(item, {
+                enableZ: true
+              });
+              updateIntegratedMesh();
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        }
+
+        // update/add the modificationType as attribute information and change the symbolization accordingly
+        function updateModificationType(graphic, modificationType) {
+          graphic.attributes = { modificationType: modificationType };
+          let colors = {
+            clip: [252, 173, 88],
+            mask: [157, 219, 129],
+            replace: [133, 148, 209]
+          };
+          modificationSymbol.symbolLayers[0].material.color = colors[modificationType];
+          graphic.symbol = modificationSymbol;
+        }
+
+        // update the IntegratedMesh with the modifications
+        function updateIntegratedMesh() {
+          // create the modification collection with the geometry and attribute from the graphicsLayer
+          let modifications1 = new SceneModifications(
+            graphicsLayer.graphics.toArray().map((graphic) => {
+              return new SceneModification({
+                geometry: graphic.geometry,
+                type: "clip"
+              });
+            })
+          );
+
+          let modifications2 = new SceneModifications(
+            graphicsLayer.graphics.toArray().map((graphic) => {
+              return new SceneModification({
+                geometry: graphic.geometry,
+                type: "mask"
+              });
+            })
+          );
+
+          let modifications0 = new SceneModifications();
+          
+          // add the modifications to the IntegratedMesh
+          let showLayer = getSelectedModificationType();
+          for (let key in layerList) {
+            if (key == defaultLayer) {
+              if (key == showLayer) {
+                imLayer[key].modifications = modifications0;
+              } else {
+                imLayer[key].modifications = modifications1;
+              }
+            } else {
+              imLayer[key].modifications = modifications2;
+            }
+          }
+        }
+        
+        function setVisiblity() {
+          let showLayer = getSelectedModificationType();
+          for (let key in layerList) {
+            if (key == defaultLayer || key == showLayer) {
+              imLayer[key].visible = true;
+            } else {
+              imLayer[key].visible = false;
+            }
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="tools" class="esri-widget">
+        <h2>KYOTO Time Machine</h2>
+        <calcite-label layout="inline">
+        <calcite-icon icon="number-circle-1-f" scale="m" /></calcite-icon>
+        <p>範囲を決めてください.</p>
+        </calcite-label>
+        <button id="createModification" class="esri-button esri-button--half">範囲の設定</button>
+<br><br>
+        <calcite-label layout="inline">
+        <calcite-icon icon="number-circle-2-f" scale="m" /></calcite-icon>
+        <p>表示する年を選んでください.</p>
+        </calcite-label>
+        <div class="option">
+          <input type="radio" name="modificationType" id="modification-layer1" value="1" checked />
+          <label for="modification-layer1"><b>2020（令和2）年 </b></label>
+        </div>
+        <div class="option">
+          <input type="radio" name="modificationType" id="modification-layer2" value="2" />
+          <label for="modification-layer2"><b>1987（昭和62）年 </b></label>
+        </div>
+        <div class="option">
+          <input type="radio" name="modificationType" id="modification-layer3" value="3" />
+          <label for="modification-layer3"><b>1961（昭和36）年 </b></label>
+        </div>
+        <div class="option">
+          <input type="radio" name="modificationType" id="modification-layer4" value="4" />
+          <label for="modification-layer4"><b>1946（昭和21）年</b></label>
+        </div>
+        <calcite-loader
+          id="calciteLoader"
+          label="loading"
+          text="表示を更新中."
+          type="indeterminate"
+        ></calcite-loader>
+        <br>
+        <p>(c) Takashi Kirimura</p>
+      </div>
+    </div>
+  </body>
+</html>
