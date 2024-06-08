@@ -1,0 +1,171 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Simply Flood Simulator</title>
+
+    <script type="module" src="https://js.arcgis.com/calcite-components/2.5.1/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.5.1/calcite.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #tools {
+        display: none;
+        padding: 0.5em 1em;
+        width: 300px;
+      }
+      
+    </style>
+
+    <script>
+      require(["esri/config", "esri/Map", "esri/views/SceneView", "esri/layers/GraphicsLayer", "esri/Graphic", "esri/layers/IntegratedMeshLayer"], (
+        esriConfig,
+        Map,
+        SceneView,
+        GraphicsLayer,
+        Graphic,
+        IntegratedMeshLayer
+      ) => {
+        esriConfig.apiKey = "AAPKdc2fa97c3fe344ada7049e6ce714f70fCAHKJunevev7EbraWWQcQXYeQ4R_La1DMv2czIGuKC431BX5ebgKN4hk_iq75BwR";
+        const map = new Map({
+          basemap: "hybrid"
+        });
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map,
+
+          camera: {
+            // autocasts as new Camera()
+            position: {
+              // autocasts as new Point()
+              x: 136.04,
+              y: 33.73,
+              z: 1500.00
+            },
+            heading: 265.00,
+            tilt: 63.00
+          }
+        });
+
+        view.ui.add("tools", "top-right");
+        document.getElementById("tools").style.display = "block";
+
+        /*********************
+         * Add graphics layer
+         *********************/
+
+        const graphicsLayer = new GraphicsLayer();
+        map.add(graphicsLayer);
+
+        /***************************
+         * Add a 3D polygon graphic
+         ***************************/
+
+        const polygon = {
+          type: "polygon", // autocasts as new Polygon()
+          rings: [
+            [135.9509813884283, 33.67594187953441, 5],
+            [135.9509813884283, 33.750806372165364, 5],
+            [136.02666558949053, 33.750806372165364, 5],
+            [136.02666558949053, 33.67594187953441, 5],
+            [135.9509813884283, 33.67594187953441, 5]
+          ]
+        };
+
+        const fillSymbol = {
+          type: "simple-fill", // autocasts as new SimpleFillSymbol()
+          color: [79, 209, 255, 0.5],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [255, 255, 255],
+            width: 2
+          }
+        };
+
+        const defaultWaterPolygon = new Graphic({
+          geometry: polygon,
+          symbol: fillSymbol
+        });
+
+//        graphicsLayer.add(defaultWaterPolygon);
+
+        const meshLayer = new IntegratedMeshLayer({
+           url: "https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shingu2019_tiledmodel_v3/SceneServer",
+           copyright: "Takashi Kirimura",
+           title: "新宮市中心部3Dモデル 2020年"
+        });
+        map.add(meshLayer);
+
+        const showFloodWaterButton = document.getElementById("showFloodWater");
+        showFloodWaterButton.addEventListener("click", (event) => {
+          const floodDepth = document.getElementById("floodDepth").value;
+          let geom = createPolygonRing(meshLayer.fullExtent, floodDepth);
+          const polygon = {
+            type: "polygon",
+            rings: geom
+          };
+          graphicsLayer.removeAll();
+          const waterPolygon = new Graphic({
+            geometry: polygon,
+            symbol: fillSymbol
+          });
+          graphicsLayer.add(waterPolygon);
+        });
+        
+        const hideFloodWaterButton = document.getElementById("hideFloodWater");
+        hideFloodWaterButton.addEventListener("click", (event) => {
+          graphicsLayer.removeAll();
+        });
+
+        function createPolygonRing(extent, elevation) {
+          let ring = [
+            [extent.xmin, extent.ymin, elevation],
+            [extent.xmin, extent.ymax, elevation],
+            [extent.xmax, extent.ymax, elevation],
+            [extent.xmax, extent.ymin, elevation],
+            [extent.xmin, extent.ymin, elevation]
+          ];
+          return ring;
+        }
+        
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="tools" class="esri-widget">
+        <p>簡易浸水シミュレーション</p>
+        <p>水面の高さ（m）</p>
+        <calcite-slider
+         id="floodDepth"
+         name="floodDepth"
+         value="3"
+         min="0"
+         max="40"
+         label-ticks
+         label-handles
+        ></calcite-slider>
+        <button id="showFloodWater" class="esri-button esri-button--secondary esri-button--half">水面の表示</button>
+        <br />
+        <br />
+        <button id="hideFloodWater" class="esri-button esri-button--secondary esri-button--half">水面を隠す</button>
+        <br />
+        <br />
+        (c) Takashi Kirimura
+        <br />
+      </div>
+    </div>
+  </body>
+</html>
