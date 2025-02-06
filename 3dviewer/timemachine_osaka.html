@@ -197,6 +197,7 @@
             imLayer[key] = webscene.layers.find((layer) => {
               return layer.title === layerList[key];
             });
+            imLayer[key].visible = true;
           }
 
           // listen to click events to detect if the user would like to update a graphic
