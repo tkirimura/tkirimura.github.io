@@ -1,0 +1,587 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Landscape Time Machine</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #tools {
+        display: none;
+        padding: 0.5em 1em;
+      }
+
+      #time-slider {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        bottom: 20px;
+      }
+      
+      #mesh_layers_list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 0.5px solid gray;
+        max-height: 300px;
+        overflow-y: scroll;
+      }
+      
+      #mesh_layers_list li {
+        border-bottom: 0.5px solid gray;
+        cursor: pointer;
+      }
+
+      .layerlist-ckb {
+        margin: 3px;
+        padding: 3px;
+      }
+      
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
+    <script type="module" src="https://js.arcgis.com/calcite-components/2.13.1/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.13.1/calcite.css" />
+    <script src="https://js.arcgis.com/4.31/"></script>
+
+    <script>
+      require([
+        "esri/config",
+        "esri/Map",
+        "esri/WebScene",
+        "esri/views/SceneView",
+        "esri/time/TimeExtent",
+        "esri/time/TimeInterval",
+        "esri/widgets/TimeSlider",
+        "esri/widgets/DirectLineMeasurement3D",
+        "esri/widgets/Expand",
+        "esri/core/reactiveUtils",
+        "esri/geometry/Polygon",
+        "esri/geometry/SpatialReference",
+        "esri/layers/IntegratedMeshLayer",
+        "esri/layers/FeatureLayer",
+        "esri/layers/support/FeatureFilter"],
+         (esriConfig, Map, WebScene, SceneView, TimeExtent, TimeInterval,
+           TimeSlider, DirectLineMeasurement3D, Expand, reactiveUtils, Polygon, SpatialReference,
+           IntegratedMeshLayer, FeatureLayer, FeatureFilter) => { (async () => {
+        const map = new Map({
+          basemap: "topo-3d",
+          ground: "world-elevation"
+        });
+        const webscene = new WebScene({
+          portalItem: {
+            id: "b39d0eb8e29f4729918e6d84eddfcaf3"
+          }
+        });
+        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
+        
+        const view = new SceneView({
+          container: "viewDiv",
+          map: webscene,
+          camera: {
+            position: {
+              spatialReference: {
+                latestWkid: 3857,
+                wkid: 102100
+              },
+              x: 15081930.68,
+              y: 4121119.11,
+              z: 500000.0
+            },
+            heading: 0,
+            tilt: 0.49
+          }
+        });
+        
+        const timeSlider = new TimeSlider({
+          container: "time-slider",
+          view: view,
+          mode: "time-window",
+          fullTimeExtent: {
+            start: new Date("1920-01-01"),
+            end: new Date("2029-12-31")
+          },
+          timeExtent: {
+            start: new Date("1920-01-01"),
+            end: new Date("2029-12-31")
+          },
+          stops: {
+            interval: new TimeInterval({
+              value: 1,
+              unit: "years"
+            })
+          },
+          labelFormatFunction: (value, type, element, layout) => {
+            switch (type) {
+              case "min":
+              case "max":
+                var year = value.getFullYear();
+                element.innerText = addJapaneseYear(year);
+                break;
+              case "extent":
+                var year1 = value[1].getFullYear();
+                var year0 = value[0].getFullYear();
+                element.innerText = addJapaneseYear(year0) + " - " + addJapaneseYear(year1);
+                break;
+            }
+          }
+        });
+        
+        var meshLayers = [];
+        var layerInfo = [];
+        var meshLayerExtentLayer, meshLayerExtentLayer2, layerView, layerView2;
+        var queryGraphics;
+        var currentTimeExtent;
+        const meshExtents = [];
+        const jsonUrl = "https://tkirimura.github.io/3dviewer/slpk_list.json";
+        fetch(jsonUrl).then(function (data) {
+          return data.json();
+        })
+        .then(function (json) {
+          layerInfo = json;
+          for (var i = 0; i < layerInfo.layers.length; i++) {
+            var layer = new IntegratedMeshLayer({
+              url: layerInfo.layers[i].url,
+              title: layerInfo.layers[i].title,
+              opacity: 1,
+              id: layerInfo.layers[i].id,
+              copyright: "(c) Takashi Kirimura"
+            });
+            meshLayers.push(layer);
+            webscene.add(layer);
+          }
+
+        });
+        
+        const listNode = document.getElementById("mesh_layers_list");
+        
+        reactiveUtils.watch(
+          () => timeSlider.timeExtent, (value) => {
+            // timeExtentの値（value）をもとに表示するレイヤーを絞り込み
+            setLayerVisiblity(value.start, value.end);
+            var sy = value.start.getFullYear().toString();
+            var ey = value.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            queryExtentFeatures();
+            if (document.getElementById("temporal-filter-switch").checked) {
+              currentTimeExtent = timeSlider.timeExtent;
+            }
+            
+          }
+        );
+        
+        webscene.loadAll()
+          .then(function() {
+            for (var i = 0; i < webscene.layers.length; i++) {
+              if (webscene.layers.items[i].type == "integrated-mesh") {
+                var fullExt = webscene.layers.items[i].fullExtent.extent;
+                let rings = [
+                  [fullExt.xmin, fullExt.ymin],
+                  [fullExt.xmin, fullExt.ymax],
+                  [fullExt.xmax, fullExt.ymax],
+                  [fullExt.xmax, fullExt.ymin],
+                  [fullExt.xmin, fullExt.ymin]
+                ];
+                let polygon = new Polygon({
+                  hasZ: false,
+                  hasM: false,
+                  rings: rings,
+                  spatialReference: { wkid: 4326 }
+                });
+                let attr = layerInfo.layers.find((l) => l.url === webscene.layers.items[i].url);
+                let meshExtent = {
+                  geometry: polygon,
+                  attributes: {
+                    ObjectID: i+1,
+                    id: attr.id,
+                    url: webscene.layers.items[i].url,
+                    year: attr.year,
+                    title: webscene.layers.items[i].title,
+                    areaName: attr.area,
+                    publishdate: attr.publishdate,
+                    flag: 0
+                  }
+                }
+                meshExtents.push(meshExtent);
+              }
+            }
+    
+            const renderer = {
+              type: "simple",
+              symbol: {
+                type: "polygon-3d",
+                symbolLayers: [{
+                  type: "extrude",
+                  material: {
+                    color: [255, 255, 255, 0.0]
+                  },
+                  edges: {
+                    type: "solid",
+                    color: "red",
+                    size: 1.5
+                  },
+                  size: 1000
+                }]
+              }
+            }
+
+            const renderer2 = {
+              type: "simple",
+              symbol: {
+                type: "polygon-3d",
+                symbolLayers: [{
+                  type: "extrude",
+                  material: {
+                    color: [255, 255, 255, 0.0]
+                  },
+                  edges: {
+                    type: "solid",
+                    color: "blue",
+                    size: 0.3
+                  },
+                  size: 1000
+                }]
+              }
+            }
+    
+            meshLayerExtentLayer = new FeatureLayer({
+              // IntegratedMeshLayerのextentやURL、タイトルなど、json情報を格納したレイヤー
+              fields: [
+              {
+                name: "ObjectID",
+                alias: "ObjectID",
+                type: "oid"
+              }, {
+                name: "id",
+                alias: "id",
+                type: "string"
+              }, {
+                name: "url",
+                alias: "url",
+                type: "string"
+              }, {
+                name: "year",
+                alias: "year",
+                type: "integer"
+              }, {
+                name: "title",
+                alias: "title",
+                type: "string"
+              }, {
+                name: "areaName",
+                alias: "areaName",
+                type: "string"
+              }, {
+                name: "publishdate",
+                alias: "publishdate",
+                type: "date"
+              }, {
+                name: "flag",
+                alias: "flag",
+                type: "integer"
+              }],
+              objectIdField: "ObjectID",
+              geometryType: "polygon",
+              title: "LayerExtents",
+              spatialReference: { wkid: 4326 },
+              source: meshExtents,
+              renderer: renderer,
+              popupEnabled: true,
+              popupTemplate: {
+                title: "{areaName}:{year}年",
+                content: popupContent //"レイヤー名:{title}<br>公開日:{publishdate}"
+              }
+            });
+            
+            meshLayerExtentLayer2 = new FeatureLayer({
+              // IntegratedMeshLayerのextentやURL、タイトルなど、json情報を格納したレイヤー
+              fields: [
+              {
+                name: "ObjectID",
+                alias: "ObjectID",
+                type: "oid"
+              }, {
+                name: "id",
+                alias: "id",
+                type: "string"
+              }, {
+                name: "url",
+                alias: "url",
+                type: "string"
+              }, {
+                name: "year",
+                alias: "year",
+                type: "integer"
+              }, {
+                name: "title",
+                alias: "title",
+                type: "string"
+              }, {
+                name: "areaName",
+                alias: "areaName",
+                type: "string"
+              }, {
+                name: "publishdate",
+                alias: "publishdate",
+                type: "date"
+              }, {
+                name: "flag",
+                alias: "flag",
+                type: "integer"
+              }],
+              objectIdField: "ObjectID",
+              geometryType: "polygon",
+              title: "LayerExtents_notDisplayed",
+              spatialReference: { wkid: 4326 },
+              source: meshExtents,
+              renderer: renderer2
+            });
+            
+
+            meshLayerExtentLayer.definitionExpression = "year >= 1920 AND year <= 2029";
+            meshLayerExtentLayer2.definitionExpression = "year < 1920 OR year > 2029";
+            webscene.add(meshLayerExtentLayer2);
+            webscene.add(meshLayerExtentLayer);
+            queryExtentFeatures();
+        });
+
+        function popupContent(feature) {
+          const div = document.createElement("div");
+          const attr = feature.graphic.attributes;
+          const datestr = new Date(attr.publishdate).toLocaleDateString("ja-JP", {year: "numeric", month: "2-digit", day: "2-digit"})
+          div.innerHTML = 
+            "地域: " + attr.areaName + "<br/>" + 
+            "年次: " + addJapaneseYear(attr.year) + "<br/>" +
+            "公開日: " + datestr + "<br/>" +
+            "レイヤー: <a href=\"https://www.arcgis.com/home/item.html?id=" + attr.id + "\">" + attr.title + "</a>";
+          return div;
+        }
+
+        reactiveUtils.when(
+          () => view?.stationary === true,
+          async () => {
+            //  これで、一応、動きが終わった状態、ということになる。
+            //  表示範囲内のフィーチャを取得する
+            
+            queryExtentFeatures();
+          }
+        );
+        
+        
+        function queryExtentFeatures() {
+          try {
+            let query =  meshLayerExtentLayer.createQuery();
+            query.geometry = view.visibleArea;
+            query.spatialRelationship = "intersects";
+            query.returnGeometry = true;
+            query.outFields = [ "title", "year", "areaName", "id", "publishdate" ];
+            query.orderByFields = ["areaName", "year"];
+            
+            meshLayerExtentLayer.queryFeatures(query).then(function(results){
+              // prints the array of result graphics to the console
+              const fragment = document.createDocumentFragment();
+              queryGraphics = results.features;
+              
+              queryGraphics.forEach((result, index) => {
+                const attributes = result.attributes;
+                const name = attributes.areaName;
+                const year = attributes.year;
+                const layerLabel = document.createTextNode(" " + name + ":" + addJapaneseYear(year));
+
+                const li = document.createElement("li");
+                li.classList.add("panel-result");
+                li.tabIndex = 0;
+                li.setAttribute("data-result-id", index);
+                li.textContent = "";
+                
+                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+                // チェックボックスを追加する
+                //  opacityの状態に応じてボタンのオンオフを設定する
+                const calciteCkb = document.createElement("calcite-checkbox");
+                mlayer.opacity == 1 ? calciteCkb.checked = true: calciteCkb.checked = false;
+                calciteCkb.id = "layer-check_" + index.toString();
+                calciteCkb.setAttribute("layerid", attributes.id);
+                calciteCkb.addEventListener("calciteCheckboxChange", setMeshLayerOpacity);
+                calciteCkb.classList.add("layerlist-ckb");
+                li.appendChild(calciteCkb);
+                li.appendChild(layerLabel);
+
+                fragment.appendChild(li);
+              });
+              listNode.innerHTML = "";
+              listNode.appendChild(fragment);
+            });
+          } catch {
+            console.log("layer is not loaded yet");
+          }
+        }
+        
+        document
+          .getElementById("temporal-filter-switch")
+          .addEventListener("calciteSwitchChange", updateTimeEnabled);
+
+        function updateTimeEnabled(event) {
+          timeSlider.disabled = !event.target.checked;
+          view.timeExtent = event.target.checked
+            ? new TimeExtent({
+              start: currentTimeExtent.start,
+              end: currentTimeExtent.end
+            })
+            : null;
+        }
+
+        document
+          .getElementById("extent-layer-switch")
+          .addEventListener("calciteSwitchChange", setMeshLayerVisiblity);
+
+        function setMeshLayerVisiblity(event) {
+          const target = event.target;
+          if (target.checked) {
+            meshLayerExtentLayer2.visible = true;
+            meshLayerExtentLayer.visible = true;
+          } else {
+            meshLayerExtentLayer2.visible = false;
+            meshLayerExtentLayer.visible = false;
+          }
+        }
+
+        function setMeshLayerOpacity(event) {
+          const target = event.target
+          const layerId = target.getAttribute("layerid");
+          const mlayer = webscene.layers.items.find((l) => l.id === layerId);
+          if (target.checked) {
+            mlayer.opacity = 1;
+          } else {
+            mlayer.opacity = 0;
+          }
+        }
+
+        view.ui.add("tools", "top-right");
+        document.getElementById("tools").style.display = "block";
+//        view.ui.add("temporal-filter", "top-right");
+
+
+        const measurementWidget = new DirectLineMeasurement3D({
+          container: document.createElement("div"),
+          view: view
+        });
+        const measurementWidgetExpand = new Expand({
+          expandIcon: "measure",
+          view: view,
+          content: measurementWidget
+        });
+        view.ui.add(measurementWidgetExpand, "top-left");
+
+
+        function addJapaneseYear(year) {
+          // 和暦変換（1920～）
+          // 大正 9　1920
+          // 大正15/昭和元　1926
+          // 昭和64/平成元　1989
+          // 平成31/令和元　2019
+          var yearText = "";
+          switch (true) {
+            case 1920 <= year && year <= 1925:
+              yearText = year.toString() + "/大正" + (year - 1911).toString() + "年";
+              break;
+            case year == 1926:
+              yearText = year.toString() + "/大正15/昭和元年";
+              break;
+            case 1927 <= year && year <= 1988:
+              yearText = year.toString() + "/昭和" + (year - 1925).toString() + "年";
+              break;
+            case year == 1989:
+              yearText = year.toString() + "/昭和64/平成元年";
+              break;
+            case 1990 <= year && year <= 2018:
+              yearText = year.toString() + "/平成" + (year - 1988).toString() + "年";
+              break;
+            case year == 2019:
+              yearText = year.toString() + "/平成31/令和元年";
+              break;
+            default:
+              yearText = year.toString() + "/令和" + (year - 2018).toString() + "年";
+              break;
+          }
+          return yearText;
+        }
+        
+        function setLayerVisiblity(start, end) {
+          const year0 = start.getFullYear();
+          const year1 = end.getFullYear();
+          
+          const targetLayers = layerInfo.layers.filter((l) => {
+            if (year0 <= l.year && l.year <= year1 ) {
+              return true;
+            }
+          });
+          
+          const loadedLayers = webscene.layers;
+          for (var i = 0; i < loadedLayers.length; i++) {
+            if (loadedLayers.items[i].type == "integrated-mesh") {
+              if (targetLayers.find((l) => l.url === loadedLayers.items[i].url)) {
+                loadedLayers.items[i].visible = true;
+              } else {
+                loadedLayers.items[i].visible = false;
+              }
+            }
+          }
+        }
+        
+        const onListClickHandler = async (event) => {
+          const target = event.target;
+          const resultId = target.getAttribute("data-result-id");
+
+          const result = resultId && queryGraphics && queryGraphics[parseInt(resultId, 10)];
+
+          if (result) {
+            try {
+              await view.goTo(result.geometry.extent.expand(2));
+
+              view.openPopup({
+                features: [result],
+                location: result.geometry.centroid
+              });
+            } catch (error) {
+              if (error.name != "AbortError") {
+                console.error(error);
+              }
+            }
+          }
+        };
+        
+        listNode.addEventListener("click", onListClickHandler);
+        
+        })();
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="tools" class="esri-widget">
+        <h2>Landscape Time Machine</h2>
+        <div class="temporal-filter">
+          <calcite-label slot="heading" layout="inline">
+            <calcite-switch id="extent-layer-switch" checked></calcite-switch> 範囲枠の表示 / Display Extent
+          </calcite-label>
+          <calcite-label slot="heading" layout="inline">
+            <calcite-switch id="temporal-filter-switch" checked></calcite-switch> 期間の絞り込み / Temporal Filter
+          </calcite-label>
+        </div>
+        <ul id="mesh_layers_list">
+        </ul>
+        <p>(c) Takashi Kirimura</p>
+      </div>
+    </div>
+    <div id="time-slider"></div>
+  </body>
+</html>
