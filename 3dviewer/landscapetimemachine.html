@@ -30,7 +30,7 @@
         margin: 0;
         padding: 0;
         border-top: 0.5px solid gray;
-        max-height: 300px;
+        max-height: 40vh;
         overflow-y: scroll;
       }
       
@@ -43,7 +43,25 @@
         margin: 3px;
         padding: 3px;
       }
+
+      #informationDialog {
+        width: 350px;
+        max-height: 30vh;
+        min-height: 50px;
+        padding: 0.5em 1em;
+      }
       
+      #informationDialog p{
+        text-indent: 1em;
+        text-align: justify;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+
+      #informationDialog h2{
+        text-align: center;
+        line-height: 0.5em;
+      }
     </style>
 
     <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
@@ -253,7 +271,6 @@
             }
     
             meshLayerExtentLayer = new FeatureLayer({
-              // IntegratedMeshLayerのextentやURL、タイトルなど、json情報を格納したレイヤー
               fields: [
               {
                 name: "ObjectID",
@@ -297,12 +314,11 @@
               popupEnabled: true,
               popupTemplate: {
                 title: "{areaName}:{year}年",
-                content: popupContent //"レイヤー名:{title}<br>公開日:{publishdate}"
+                content: popupContent
               }
             });
             
             meshLayerExtentLayer2 = new FeatureLayer({
-              // IntegratedMeshLayerのextentやURL、タイトルなど、json情報を格納したレイヤー
               fields: [
               {
                 name: "ObjectID",
@@ -368,9 +384,7 @@
         reactiveUtils.when(
           () => view?.stationary === true,
           async () => {
-            //  これで、一応、動きが終わった状態、ということになる。
             //  表示範囲内のフィーチャを取得する
-            
             queryExtentFeatures();
           }
         );
@@ -466,8 +480,6 @@
 
         view.ui.add("tools", "top-right");
         document.getElementById("tools").style.display = "block";
-//        view.ui.add("temporal-filter", "top-right");
-
 
         const measurementWidget = new DirectLineMeasurement3D({
           container: document.createElement("div"),
@@ -480,6 +492,13 @@
         });
         view.ui.add(measurementWidgetExpand, "top-left");
 
+        const infoDialogExpand = new Expand({
+          expandIcon: "information",
+          view: view,
+          content: document.getElementById("informationDialog"),
+          expanded: true
+        });
+        view.ui.add(infoDialogExpand, "top-left");
 
         function addJapaneseYear(year) {
           // 和暦変換（1920～）
@@ -583,5 +602,21 @@
       </div>
     </div>
     <div id="time-slider"></div>
+    <div id="informationDialog">
+    <h2>Landscape Time Machine</h2>
+    <div>
+    <p>赤い範囲枠が表示されているところをズームすると、さまざまな時代の街並みや風景を3Dで確認することができます。
+    地域によってはいくつかの時代の3Dデータがありますので、チェックボックスを外して表示/非表示を切り替えて、
+    見たい地域・時代のデータを表示するようにしてください。期間の絞り込み機能を使うと、下のスライダーを使って、
+    特定の時代のみを表示することもできます。</p>
+    <p>これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真をもとにして作成したものです。
+    精度はそれほど高くはありませんので、実際とは大きく景色が異なることもあります。ご利用の際はご注意ください。</p>
+    <br/>
+    <p>
+    作成者：桐村　喬（京都産業大学）
+    </p>
+    <br/>
+    </div>
+    </div>
   </body>
 </html>
