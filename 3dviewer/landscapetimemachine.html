@@ -479,7 +479,15 @@
         function updateTimeEnabled(event) {
           if (!event.target.checked) {
             currentTimeExtent = timeSlider.timeExtent;
+            
+            setLayerVisiblity(timeSlider.fullTimeExtent.start, timeSlider.fullTimeExtent.end);
+            var sy = timeSlider.fullTimeExtent.start.getFullYear().toString();
+            var ey = timeSlider.fullTimeExtent.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            queryExtentFeatures();
           }
+          
           timeSlider.disabled = !event.target.checked;
           view.timeExtent = event.target.checked
             ? new TimeExtent({
@@ -487,6 +495,14 @@
               end: currentTimeExtent.end
             })
             : null;
+          if (event.target.checked) {
+            setLayerVisiblity(currentTimeExtent.start, currentTimeExtent.end);
+            var sy = currentTimeExtent.start.getFullYear().toString();
+            var ey = currentTimeExtent.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            queryExtentFeatures();
+          }
         }
 
         document
