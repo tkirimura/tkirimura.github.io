@@ -82,6 +82,7 @@
         "esri/widgets/TimeSlider",
         "esri/widgets/DirectLineMeasurement3D",
         "esri/widgets/Expand",
+        "esri/widgets/LayerList",
         "esri/core/reactiveUtils",
         "esri/geometry/Polygon",
         "esri/geometry/SpatialReference",
@@ -89,7 +90,7 @@
         "esri/layers/FeatureLayer",
         "esri/layers/support/FeatureFilter"],
          (esriConfig, Map, WebScene, SceneView, TimeExtent, TimeInterval,
-           TimeSlider, DirectLineMeasurement3D, Expand, reactiveUtils, Polygon, SpatialReference,
+           TimeSlider, DirectLineMeasurement3D, Expand, LayerList, reactiveUtils, Polygon, SpatialReference,
            IntegratedMeshLayer, FeatureLayer, FeatureFilter) => { (async () => {
         const map = new Map({
           basemap: "topo-3d",
@@ -100,7 +101,7 @@
             id: "b39d0eb8e29f4729918e6d84eddfcaf3"
           }
         });
-        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
+//        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
         
         const view = new SceneView({
           container: "viewDiv",
@@ -155,10 +156,14 @@
           }
         });
         
+        const layerlist = new LayerList({
+          view: view
+        });
+        
         var meshLayers = [];
         var layerInfo = [];
         var meshLayerExtentLayer, meshLayerExtentLayer2, layerView, layerView2;
-        var queryGraphics;
+        var queryGraphics, queryGraphics2;
         var currentTimeExtent;
         const meshExtents = [];
         const jsonUrl = "https://tkirimura.github.io/3dviewer/slpk_list.json";
@@ -175,6 +180,7 @@
               id: layerInfo.layers[i].id,
               copyright: "(c) Takashi Kirimura"
             });
+            layerInfo.layers[i]["flag"] = true;
             meshLayers.push(layer);
             webscene.add(layer);
           }
@@ -365,8 +371,16 @@
             });
             
 
-            meshLayerExtentLayer.definitionExpression = "year >= 1920 AND year <= 2029";
-            meshLayerExtentLayer2.definitionExpression = "year < 1920 OR year > 2029";
+            let tExt = timeSlider.timeExtent;
+            tExt.start = new Date("2016-01-01");
+            tExt.end = new Date("2025-12-31");
+            setLayerVisiblity(tExt.start, tExt.end);
+            var sy = tExt.start.getFullYear().toString();
+            var ey = tExt.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+//            meshLayerExtentLayer.definitionExpression = "year >= 1920 AND year <= 2029";
+//            meshLayerExtentLayer2.definitionExpression = "year < 1920 OR year > 2029";
             webscene.add(meshLayerExtentLayer2);
             webscene.add(meshLayerExtentLayer);
             queryExtentFeatures();
@@ -392,18 +406,16 @@
           }
         );
         
-        
         function queryExtentFeatures() {
           try {
             let query =  meshLayerExtentLayer.createQuery();
             query.geometry = view.visibleArea;
             query.spatialRelationship = "intersects";
             query.returnGeometry = true;
-            query.outFields = [ "title", "year", "areaName", "id", "publishdate" ];
+            query.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
             query.orderByFields = ["areaName", "year"];
             
             meshLayerExtentLayer.queryFeatures(query).then(function(results){
-              // prints the array of result graphics to the console
               const fragment = document.createDocumentFragment();
               queryGraphics = results.features;
               
@@ -420,10 +432,12 @@
                 li.textContent = "";
                 
                 const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+                const lInfo = layerInfo.layers.find((l) => l.id === attributes.id);
                 // チェックボックスを追加する
-                //  opacityの状態に応じてボタンのオンオフを設定する
                 const calciteCkb = document.createElement("calcite-checkbox");
-                mlayer.opacity == 1 ? calciteCkb.checked = true: calciteCkb.checked = false;
+                lInfo.flag == true ? calciteCkb.checked = true: calciteCkb.checked = false;
+//                mlayer.opacity == 1 ? calciteCkb.checked = true: calciteCkb.checked = false;
+                //mlayer.visible = lInfo.flag;
                 calciteCkb.id = "layer-check_" + index.toString();
                 calciteCkb.setAttribute("layerid", attributes.id);
                 calciteCkb.addEventListener("calciteCheckboxChange", setMeshLayerOpacity);
@@ -436,6 +450,23 @@
               listNode.innerHTML = "";
               listNode.appendChild(fragment);
             });
+
+            //　期間が対象内で表示範囲外のレイヤーを非表示にする
+//            let query2 =  meshLayerExtentLayer.createQuery();
+//            query2.geometry = view.visibleArea;
+//            query2.spatialRelationship = "disjoint";
+//            query2.returnGeometry = true;
+//            query2.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
+//            query2.orderByFields = ["areaName", "year"];
+//            meshLayerExtentLayer.queryFeatures(query2).then(function(results){
+//              queryGraphics2 = results.features;
+//              queryGraphics2.forEach((result, index) => {
+//                const attributes = result.attributes;
+//                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+//                mlayer.visible = false;
+//              });
+//            });
+
           } catch {
             console.log("layer is not loaded yet");
           }
@@ -446,6 +477,9 @@
           .addEventListener("calciteSwitchChange", updateTimeEnabled);
 
         function updateTimeEnabled(event) {
+          if (!event.target.checked) {
+            currentTimeExtent = timeSlider.timeExtent;
+          }
           timeSlider.disabled = !event.target.checked;
           view.timeExtent = event.target.checked
             ? new TimeExtent({
@@ -474,10 +508,13 @@
           const target = event.target
           const layerId = target.getAttribute("layerid");
           const mlayer = webscene.layers.items.find((l) => l.id === layerId);
+          const lInfo = layerInfo.layers.find((l) => l.id === layerId);
           if (target.checked) {
-            mlayer.opacity = 1;
+            mlayer.visible = true;
+            lInfo.flag = true;
           } else {
-            mlayer.opacity = 0;
+            mlayer.visible = false;
+            lInfo.flag = false;
           }
         }
 
@@ -494,6 +531,8 @@
           content: measurementWidget
         });
         view.ui.add(measurementWidgetExpand, "top-left");
+
+//        view.ui.add(layerlist, "top-left");
 
         const infoDialogExpand = new Expand({
           expandIcon: "information",
@@ -549,10 +588,16 @@
           const loadedLayers = webscene.layers;
           for (var i = 0; i < loadedLayers.length; i++) {
             if (loadedLayers.items[i].type == "integrated-mesh") {
-              if (targetLayers.find((l) => l.url === loadedLayers.items[i].url)) {
-                loadedLayers.items[i].visible = true;
+              const lInfo = targetLayers.find((l) => l.url === loadedLayers.items[i].url);
+              if (lInfo) {
+                loadedLayers.items[i].visible = lInfo.flag;
               } else {
                 loadedLayers.items[i].visible = false;
+//                const lInfo2 = layerInfo.layers.find((l) => l.id === loadedLayers.items[i].id);
+//                console.log(lInfo2.flag);
+//                lInfo2.flag = false;
+//                const lInfo3 = layerInfo.layers.find((l) => l.id === loadedLayers.items[i].id);
+//                console.log(lInfo3.flag);
               }
             }
           }
@@ -608,17 +653,10 @@
     <div id="informationDialog">
     <h2>Landscape Time Machine</h2>
     <div>
-    <p>赤い範囲枠が表示されているところをズームすると、さまざまな時代の街並みや景色を3Dで確認することができます。
-    地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、
-    見たい地域・時代のデータを表示するようにしてください。地域・時代をクリックすると、その場所にジャンプして、データの詳細が
-    表示されます。期間の絞り込み機能を使うと、下のスライダーを使って、特定の時代のみを表示することもできます。
-    なお、期間の絞り込みで非表示になったデータは青い範囲枠に切り替わります。</p>
-    <p>これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真をもとにして作成したものです。
-    精度はそれほど高くはありませんので、実際とは大きく景色が異なることもあります。ご利用の際はご注意ください。</p>
+    <p>このアプリからは、桐村が公開しているさまざまな地域・時代の3Dデータを見ることができます。下のスライダーを使って、見たい時代を絞り込んでください。そして、赤い範囲枠が表示されているところにズームすると、その時代の街並みや景色を3Dで確認することができます。地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、見たい地域・時代のデータを表示するようにしてください。リスト上の地域・時代をクリックすると、その場所にジャンプして、データの詳細を確認できます。なお、青い範囲枠は、期間の絞り込みで非表示になっているデータです。</p>
+    <p>これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真をもとにして作成したものです。精度はそれほど高くはありませんので、実際とは大きく景色が異なることもあります。ご利用の際はご注意ください。</p>
     <br/>
-    <p>
-    作成者：桐村　喬（京都産業大学）
-    </p>
+    <p>作成者：桐村　喬（京都産業大学）</p>
     <br/>
     </div>
     </div>
