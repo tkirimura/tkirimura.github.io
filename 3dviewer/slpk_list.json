@@ -32,6 +32,8 @@
 {"id":"909a02162da6448bbf59c59dc5d024e5","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sumoto2020_tiledmodel/SceneServer","year":2020,"title":"sumoto2020_tiledmodel","area":"兵庫県洲本市","publishdate":"2024/07/28"},
 {"id":"20f3c950a3554f7682d2959e2c0f1f5a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/takashima1975_tiledmodel/SceneServer","year":1975,"title":"takashima1975_tiledmodel","area":"長崎県長崎市","publishdate":"2024/11/18"},
 {"id":"2f66dbbfce64405399c6ee91b6c1b389","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka1975_v2_tiledmodel_wgs3/SceneServer","year":1975,"title":"osaka1975_v2_tiledmodel_wgs3","area":"大阪府大阪市","publishdate":"2025/02/06"},
-{"id":"286ba33f43ce474fbec82572d691b98c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka2017_tiledmodel_v2/SceneServer","year":2017,"title":"osaka2017_tiledmodel_v2","area":"大阪府大阪市","publishdate":"2025/01/28"}
+{"id":"286ba33f43ce474fbec82572d691b98c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka2017_tiledmodel_v2/SceneServer","year":2017,"title":"osaka2017_tiledmodel_v2","area":"大阪府大阪市","publishdate":"2025/01/28"},
+{"id":"e1c7b35ac7b94838aa36b859457cb6cc","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai1975_tiledmodel_wgs/SceneServer","year":1975,"title":"sendai1975_tiledmodel_wgs","area":"宮城県仙台市","publishdate":"2025/03/05"},
+{"id":"dfc1a6dabd984f78a33ca49039ca8431","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai2019_tiledmodel_wgs_contrast150/SceneServer","year":2019,"title":"sendai2019_tiledmodel_wgs_contrast150","area":"宮城県仙台市","publishdate":"2025/03/05"}
 ]
 }
