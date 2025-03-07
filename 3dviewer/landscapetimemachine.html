@@ -63,6 +63,12 @@
         text-align: center;
         line-height: 0.5em;
       }
+      
+      #sharingUrlDialog {
+        padding: 1em;
+        text-align: center;
+        line-height: 0.5em;
+      }
 
     </style>
 
@@ -103,6 +109,60 @@
         });
         esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
         
+        let initUrl = new URL(window.location.href);
+        let params = initUrl.searchParams;
+        
+        var defaultX, defaultY, defaultZ, defaultFrom, defaultTo, defaultHeading, defaultTilt;
+        params.get('x') ? defaultX = checkCameraParams(params.get('x'), 0) : defaultX = 15081930.68;
+        params.get('y') ? defaultY = checkCameraParams(params.get('y'), 0) : defaultY = 4121119.11;
+        params.get('z') ? defaultZ = checkCameraParams(params.get('z'), 0) : defaultZ = 500000.0;
+        params.get('h') ? defaultHeading = checkCameraParams(params.get('h'), 0) : defaultHeading = 0;
+        params.get('t') ? defaultTilt = checkCameraTilt(params.get('t'),0) : defaultTilt = 0.49;
+        
+        if (params.get('from') && params.get('to')) {
+          let checkedFromTo = checkFromTo(params.get('from'), params.get('to'), "2016-01-01", "2025-12-31");
+          defaultFrom = checkedFromTo[0];
+          defaultTo = checkedFromTo[1];
+        } else {
+          defaultFrom = new Date("2016-01-01");
+          defaultTo = new Date("2025-12-31");
+        }
+        
+        function checkCameraParams(value, defaultValue) {
+          if (isFinite(value)) {
+            return value;
+          } else {
+            return defaultValue;
+          }
+        }
+        
+        function checkCameraTilt(value, defaultValue) {
+          if (isFinite(value)) {
+            let num = Number(value);
+            if (num >= 0 && num <= 90) {
+              return num;
+            } else {
+              return 0;
+            }
+          } else {
+            return defaultValue;
+          }
+        }
+        
+        function checkFromTo(fromValue, toValue, dFrom, dTo) {
+          let fDate = new Date(fromValue);
+          let tDate = new Date(toValue);
+          if (isNaN(fDate.getDate()) || isNaN(tDate.getDate())){
+            return [new Date(dFrom), new Date(dTo)];
+          } else {
+            if (tDate > fDate) {
+              return [fDate, tDate];
+            } else {
+              return [new Date(dFrom), new Date(dTo)];
+            }
+          }
+        }
+        
         const view = new SceneView({
           container: "viewDiv",
           map: webscene,
@@ -112,12 +172,12 @@
                 latestWkid: 3857,
                 wkid: 102100
               },
-              x: 15081930.68,
-              y: 4121119.11,
-              z: 500000.0
+              x: defaultX,
+              y: defaultY,
+              z: defaultZ
             },
-            heading: 0,
-            tilt: 0.49
+            heading: defaultHeading,
+            tilt: defaultTilt
           }
         });
         
@@ -198,6 +258,7 @@
             meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
             meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
             queryExtentFeatures();
+            createSharingUrl();
             if (document.getElementById("temporal-filter-switch").checked) {
               currentTimeExtent = timeSlider.timeExtent;
             }
@@ -372,8 +433,8 @@
             
 
             let tExt = timeSlider.timeExtent;
-            tExt.start = new Date("2016-01-01");
-            tExt.end = new Date("2025-12-31");
+            tExt.start = defaultFrom; //new Date("2016-01-01");
+            tExt.end = defaultTo; //new Date("2025-12-31");
             setLayerVisiblity(tExt.start, tExt.end);
             var sy = tExt.start.getFullYear().toString();
             var ey = tExt.end.getFullYear().toString();
@@ -384,6 +445,7 @@
             webscene.add(meshLayerExtentLayer2);
             webscene.add(meshLayerExtentLayer);
             queryExtentFeatures();
+            createSharingUrl();
         });
 
         function popupContent(feature) {
@@ -403,8 +465,42 @@
           async () => {
             //  表示範囲内のフィーチャを取得する
             queryExtentFeatures();
+            createSharingUrl();
           }
         );
+        
+        function createSharingUrl() {
+          const urlHtml = document.getElementById("sharingUrl");
+          const cam = view.camera;
+          let outHtml;
+          outHtml = initUrl.protocol + "//" + initUrl.host + "/" + initUrl.pathname;
+          outHtml += "?x=" + cam.position.x.toFixed(2).toString() + "&y=" + cam.position.y.toFixed(2).toString() + "&z=" + cam.position.z.toFixed(2).toString();
+          outHtml += "&h=" + cam.heading.toFixed(2).toString() + "&t=" + cam.tilt.toFixed(2).toString();
+          
+          if (!timeSlider.disabled) {
+            const tExt = timeSlider.timeExtent;
+            const timeS = tExt.start;
+            const timeE = tExt.end;
+            outHtml += "&from=" + timeS.getFullYear().toString() + "-01-01";
+            outHtml += "&to=" + timeE.getFullYear().toString() + "-12-31";
+          } else {
+            const tExt = timeSlider.fullTimeExtent;
+            const timeS = tExt.start;
+            const timeE = tExt.end;
+            outHtml += "&from=" + timeS.getFullYear().toString() + "-01-01";
+            outHtml += "&to=" + timeE.getFullYear().toString() + "-12-31";
+          }
+          urlHtml.value = outHtml;
+        }
+        
+        function copySharingUrl() {
+          const urlHtml = document.getElementById("sharingUrl");
+          if (!navigator.clipboard) {
+            console.log("This browser is not supported.");
+            return;
+          }
+          navigator.clipboard.writeText(urlHtml.value);
+        }
         
         function queryExtentFeatures() {
           try {
@@ -495,6 +591,9 @@
               end: currentTimeExtent.end
             })
             : null;
+
+          createSharingUrl();
+
           if (event.target.checked) {
             setLayerVisiblity(currentTimeExtent.start, currentTimeExtent.end);
             var sy = currentTimeExtent.start.getFullYear().toString();
@@ -557,6 +656,18 @@
           expanded: true
         });
         view.ui.add(infoDialogExpand, "top-left");
+        document.getElementById("closeInfoButton").addEventListener("click", closeInfoDialog);
+        function closeInfoDialog() {
+          infoDialogExpand.expanded = false;
+        }
+        
+        const urlDialogExpand = new Expand({
+          expandIcon: "share",
+          view: view,
+          content: document.getElementById("sharingUrlDialog"),
+        });
+        view.ui.add(urlDialogExpand, "top-left");
+        document.getElementById("sharingUrlCopy").addEventListener("click", copySharingUrl);
 
         function addJapaneseYear(year) {
           // 和暦変換（1920～）
@@ -674,7 +785,17 @@
     <br/>
     <p>作成者：桐村　喬（京都産業大学）</p>
     <br/>
+    <calcite-button id="closeInfoButton">閉じる</calcite-button>
     </div>
+    </div>
+    <div id="sharingUrlDialog">
+      <p>現在の表示範囲・期間・視点のURL</p>
+      <calcite-input value="" id="sharingUrl" read-only>
+        <div slot="action">
+          <calcite-button id="sharingUrlCopy" icon-start="copy-to-clipboard"></calcite-button>
+        </div>
+      </calcite-input>
+      <calcite-tooltip reference-element="sharingUrlCopy">クリップボードにコピー</calcite-tooltip>
     </div>
   </body>
 </html>
