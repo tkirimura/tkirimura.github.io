@@ -34,6 +34,9 @@
 {"id":"2f66dbbfce64405399c6ee91b6c1b389","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka1975_v2_tiledmodel_wgs3/SceneServer","year":1975,"title":"osaka1975_v2_tiledmodel_wgs3","area":"大阪府大阪市","publishdate":"2025/02/06"},
 {"id":"286ba33f43ce474fbec82572d691b98c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka2017_tiledmodel_v2/SceneServer","year":2017,"title":"osaka2017_tiledmodel_v2","area":"大阪府大阪市","publishdate":"2025/01/28"},
 {"id":"e1c7b35ac7b94838aa36b859457cb6cc","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai1975_tiledmodel_wgs/SceneServer","year":1975,"title":"sendai1975_tiledmodel_wgs","area":"宮城県仙台市","publishdate":"2025/03/05"},
-{"id":"dfc1a6dabd984f78a33ca49039ca8431","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai2019_tiledmodel_wgs_contrast150/SceneServer","year":2019,"title":"sendai2019_tiledmodel_wgs_contrast150","area":"宮城県仙台市","publishdate":"2025/03/05"}
+{"id":"dfc1a6dabd984f78a33ca49039ca8431","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai2019_tiledmodel_wgs_contrast150/SceneServer","year":2019,"title":"sendai2019_tiledmodel_wgs_contrast150","area":"宮城県仙台市","publishdate":"2025/03/05"},
+{"id":"fcb2336101b04d5a9d1194ab9470e507","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1946tiledmodel/SceneServer","year":1946,"title":"otsu1946tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
+{"id":"cabb62b217ff4134bcbe2440bd1e7eb2","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1975tiledmodel/SceneServer","year":1975,"title":"otsu1975tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
+{"id":"3a85575c14f64263a0d50830a510b003","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu2020tiledmodel/SceneServer","year":2020,"title":"otsu2020tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"}
 ]
 }
