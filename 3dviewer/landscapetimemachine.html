@@ -141,7 +141,7 @@
         function checkCameraTilt(value, defaultValue) {
           if (isFinite(value)) {
             let num = Number(value);
-            if (num >= 0 && num <= 90) {
+            if (num >= 0 && num <= 180) {
               return num;
             } else {
               return 0;
