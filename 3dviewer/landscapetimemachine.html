@@ -473,7 +473,7 @@
           const urlHtml = document.getElementById("sharingUrl");
           const cam = view.camera;
           let outHtml;
-          outHtml = initUrl.protocol + "//" + initUrl.host + "/" + initUrl.pathname;
+          outHtml = initUrl.protocol + "//" + initUrl.host + initUrl.pathname;
           outHtml += "?x=" + cam.position.x.toFixed(2).toString() + "&y=" + cam.position.y.toFixed(2).toString() + "&z=" + cam.position.z.toFixed(2).toString();
           outHtml += "&h=" + cam.heading.toFixed(2).toString() + "&t=" + cam.tilt.toFixed(2).toString();
           
