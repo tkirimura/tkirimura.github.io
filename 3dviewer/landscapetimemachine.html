@@ -254,15 +254,17 @@
         reactiveUtils.watch(
           () => timeSlider.timeExtent, (value) => {
             // timeExtentの値（value）をもとに表示するレイヤーを絞り込み
-            setLayerVisiblity(value.start, value.end);
-            var sy = value.start.getFullYear().toString();
-            var ey = value.end.getFullYear().toString();
-            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
-            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
-            queryExtentFeatures();
-            createSharingUrl();
-            if (document.getElementById("temporal-filter-switch").checked) {
-              currentTimeExtent = timeSlider.timeExtent;
+            if (!timeSlider.disabled) {
+              setLayerVisiblity(value.start, value.end);
+              var sy = value.start.getFullYear().toString();
+              var ey = value.end.getFullYear().toString();
+              meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+              meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+              queryExtentFeatures();
+              createSharingUrl();
+              if (document.getElementById("temporal-filter-switch").checked) {
+                currentTimeExtent = timeSlider.timeExtent;
+              }
             }
             
           }
@@ -577,7 +579,6 @@
         function updateTimeEnabled(event) {
           if (!event.target.checked) {
             currentTimeExtent = timeSlider.timeExtent;
-            
             setLayerVisiblity(timeSlider.fullTimeExtent.start, timeSlider.fullTimeExtent.end);
             var sy = timeSlider.fullTimeExtent.start.getFullYear().toString();
             var ey = timeSlider.fullTimeExtent.end.getFullYear().toString();
