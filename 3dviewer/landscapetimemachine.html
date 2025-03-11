@@ -337,7 +337,7 @@
                   edges: {
                     type: "solid",
                     color: "blue",
-                    size: 0.3
+                    size: 0.8
                   },
                   size: 1000
                 }]
@@ -643,19 +643,39 @@
           container: document.createElement("div"),
           view: view
         });
+        
         const measurementWidgetExpand = new Expand({
           expandIcon: "measure",
           view: view,
-          content: measurementWidget
+          content: measurementWidget,
+          expandTooltip: "計測",
+          closeOnEsc: false
         });
         view.ui.add(measurementWidgetExpand, "top-left");
 
+        reactiveUtils.when(
+          () => measurementWidgetExpand?.expanded === false,
+          async () => {
+            measurementWidget.viewModel.clear();
+          }
+        );
+
 //        view.ui.add(layerlist, "top-left");
+
+        const urlDialogExpand = new Expand({
+          expandIcon: "share",
+          view: view,
+          content: document.getElementById("sharingUrlDialog"),
+          expandTooltip: "URLの共有"
+        });
+        view.ui.add(urlDialogExpand, "top-left");
+        document.getElementById("sharingUrlCopy").addEventListener("click", copySharingUrl);
 
         const infoDialogExpand = new Expand({
           expandIcon: "information",
           view: view,
           content: document.getElementById("informationDialog"),
+          expandTooltip: "このアプリについて",
           expanded: true
         });
         view.ui.add(infoDialogExpand, "top-left");
@@ -664,14 +684,6 @@
           infoDialogExpand.expanded = false;
         }
         
-        const urlDialogExpand = new Expand({
-          expandIcon: "share",
-          view: view,
-          content: document.getElementById("sharingUrlDialog"),
-        });
-        view.ui.add(urlDialogExpand, "top-left");
-        document.getElementById("sharingUrlCopy").addEventListener("click", copySharingUrl);
-
         function addJapaneseYear(year) {
           // 和暦変換（1920～）
           // 大正 9　1920
