@@ -37,6 +37,7 @@
 {"id":"dfc1a6dabd984f78a33ca49039ca8431","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/sendai2019_tiledmodel_wgs_contrast150/SceneServer","year":2019,"title":"sendai2019_tiledmodel_wgs_contrast150","area":"宮城県仙台市","publishdate":"2025/03/05"},
 {"id":"fcb2336101b04d5a9d1194ab9470e507","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1946tiledmodel/SceneServer","year":1946,"title":"otsu1946tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
 {"id":"cabb62b217ff4134bcbe2440bd1e7eb2","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1975tiledmodel/SceneServer","year":1975,"title":"otsu1975tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
-{"id":"3a85575c14f64263a0d50830a510b003","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu2020tiledmodel/SceneServer","year":2020,"title":"otsu2020tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"}
+{"id":"3a85575c14f64263a0d50830a510b003","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu2020tiledmodel/SceneServer","year":2020,"title":"otsu2020tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
+{"id":"c6f95bef679b4e02896bff2273efff3d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/koza1977_tiledmodel_v2/SceneServer","year":1977,"title":"koza1977_tiledmodel_v2","area":"沖縄県沖縄市","publishdate":"2025/03/13"}
 ]
 }
