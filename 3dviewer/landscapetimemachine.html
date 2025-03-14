@@ -26,6 +26,26 @@
         right: 5%;
         bottom: 20px;
       }
+
+      #time-slider .custom-ticks10 {
+        height: 8px;
+      }
+
+      #time-slider .custom-ticks1 {
+        height: 4px;
+      }
+
+      #time-slider .custom-ticks-red {
+        height: 8px;
+        width: 3px;
+        background-color: red;
+      }
+
+      #time-slider .custom-ticks-blue {
+        height: 6px;
+        width: 3px;
+        background-color: blue;
+      }
       
       #mesh_layers_list {
         list-style: none;
@@ -47,7 +67,7 @@
       }
 
       #informationDialog {
-        width: 350px;
+        width: 400px;
         max-height: 40vh;
         min-height: 50px;
         padding: 0.5em 1em;
@@ -183,6 +203,18 @@
           }
         });
         
+        const timeSliderStart = new Date("1920-01-01");
+        const timeSliderEnd = new Date("2029-12-31");
+        
+        const tickYears = [];
+        let currentYear = timeSliderStart;
+        currentYear.setFullYear(currentYear.getFullYear() + 1);
+        while (currentYear < timeSliderEnd) {
+          tickYears.push(new Date(currentYear.getTime()));
+          currentYear.setFullYear(currentYear.getFullYear() + 1);
+        }
+        const tickYearsTicks = tickYears.map((date) => date.getTime());
+        
         const timeSlider = new TimeSlider({
           container: "time-slider",
           view: view,
@@ -215,7 +247,28 @@
                 element.style.textAlign = "center";
                 break;
             }
-          }
+          },
+          tickConfigs: [{
+            mode: "position",
+            values: [
+              new Date(1930, 0, 1), new Date(1940, 0, 1), new Date(1950, 0, 1), new Date(1960, 0, 1), new Date(1970, 0, 1), new Date(1980, 0, 1), new Date(1990, 0, 1), new Date(2000, 0, 1), new Date(2010, 0, 1), new Date(2020, 0, 1)
+            ].map((date) => date.getTime()),
+            labelsVisible: true,
+            labelFormatFunction: (value) => {
+              const date = new Date(value);
+              return date.getFullYear() + "年";
+            },
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks10");
+            }
+          }, {
+            mode: "position",
+            values: tickYearsTicks,
+            labelsVisible: false,
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks1");
+            }
+          }]
         });
         
         const layerlist = new LayerList({
@@ -255,15 +308,20 @@
           () => timeSlider.timeExtent, (value) => {
             // timeExtentの値（value）をもとに表示するレイヤーを絞り込み
             if (!timeSlider.disabled) {
-              setLayerVisiblity(value.start, value.end);
-              var sy = value.start.getFullYear().toString();
-              var ey = value.end.getFullYear().toString();
-              meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
-              meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
-              queryExtentFeatures();
-              createSharingUrl();
-              if (document.getElementById("temporal-filter-switch").checked) {
-                currentTimeExtent = timeSlider.timeExtent;
+              const layerDef = meshLayerExtentLayer.definitionExpression;
+              let sy0 = layerDef.substring(8, 12);
+              let ey0 = layerDef.substring(25, 29);
+              let sy = value.start.getFullYear().toString();
+              let ey = value.end.getFullYear().toString();
+              if (sy0 != sy || ey0 != ey) {
+                setLayerVisiblity(value.start, value.end);
+                meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+                meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+                queryExtentFeatures();
+                createSharingUrl();
+                if (document.getElementById("temporal-filter-switch").checked) {
+                  currentTimeExtent = timeSlider.timeExtent;
+                }
               }
             }
             
@@ -519,6 +577,8 @@
               const fragment = document.createDocumentFragment();
               queryGraphics = results.features;
               
+              const dataTicks1 = [];
+
               queryGraphics.forEach((result, index) => {
                 const attributes = result.attributes;
                 const name = attributes.areaName;
@@ -546,30 +606,79 @@
                 li.appendChild(layerLabel);
 
                 fragment.appendChild(li);
+
+                dataTicks1.push(new Date(lInfo.year, 0, 1));
+
               });
               listNode.innerHTML = "";
               listNode.appendChild(fragment);
+              
+              let tickConfigs1 = {
+                mode: "position",
+                values: dataTicks1.map((date) => date.getTime()),
+                labelsVisible: false,
+                tickCreatedFunction: (value, tickElement, labelElement) => {
+                  tickElement.classList.add("custom-ticks-red");
+                }
+              }
+              timeSlider.tickConfigs[2] = tickConfigs1;
+              timeSlider.renderNow();
+              
+//              if (timeSlider.tickConfigs.length >= 3) {
+//              try {
+//                timeSlider.renderNow();
+//              } catch(e) {
+//                console.log("error");
+//              }
+//              }
+//              timeSlider.viewModel.next();
+//              timeSlider.viewModel.previous();
+              
             });
 
-            //　期間が対象内で表示範囲外のレイヤーを非表示にする
-//            let query2 =  meshLayerExtentLayer.createQuery();
-//            query2.geometry = view.visibleArea;
-//            query2.spatialRelationship = "disjoint";
-//            query2.returnGeometry = true;
-//            query2.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
-//            query2.orderByFields = ["areaName", "year"];
-//            meshLayerExtentLayer.queryFeatures(query2).then(function(results){
-//              queryGraphics2 = results.features;
-//              queryGraphics2.forEach((result, index) => {
-//                const attributes = result.attributes;
-//                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
-//                mlayer.visible = false;
-//              });
-//            });
+            let query2 =  meshLayerExtentLayer2.createQuery();
+            query2.geometry = view.visibleArea;
+            query2.spatialRelationship = "intersects";
+            query2.returnGeometry = true;
+            query2.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
+            query2.orderByFields = ["areaName", "year"];
+            meshLayerExtentLayer2.queryFeatures(query2).then(function(results){
+              queryGraphics2 = results.features;
+
+              const dataTicks2 = [];
+
+              queryGraphics2.forEach((result, index) => {
+                const attributes = result.attributes;
+                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+                dataTicks2.push(new Date(attributes.year, 0, 1));
+              });
+
+              let tickConfigs2 = {
+                mode: "position",
+                values: dataTicks2.map((date) => date.getTime()),
+                labelsVisible: false,
+                tickCreatedFunction: (value, tickElement, labelElement) => {
+                  tickElement.classList.add("custom-ticks-blue");
+                }
+              }
+              timeSlider.tickConfigs[3] = tickConfigs2;
+              timeSlider.renderNow();
+//              try {
+//                console.log("error1");
+//                timeSlider.renderNow();
+//              } catch(e) {
+//                console.log("error");
+//              }
+//              timeSlider.viewModel.next();
+//              timeSlider.viewModel.previous();
+
+            });
 
           } catch {
             console.log("layer is not loaded yet");
           }
+//              timeSlider.viewModel.next();
+//              timeSlider.viewModel.previous();
         }
         
         document
@@ -795,7 +904,7 @@
     <div id="informationDialog">
     <h2>Landscape Time Machine</h2>
     <div>
-    <p>このアプリからは、桐村が公開しているさまざまな地域・時代の3Dデータを見ることができます。下のスライダーを使って、見たい時代を絞り込んでください。そして、赤い範囲枠が表示されているところにズームすると、その時代の街並みや景色を3Dで確認することができます。地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、見たい地域・時代のデータを表示するようにしてください。リスト上の地域・時代をクリックすると、その場所にジャンプして、データの詳細を確認できます。なお、青い範囲枠は、期間の絞り込みで非表示になっているデータです。</p>
+    <p>このアプリからは、桐村が公開しているさまざまな地域・時代の3Dデータを見ることができます。下のスライダーを使って、見たい時代を絞り込んでください。赤い範囲枠が表示されているところにズームすると、その時代の街並みや景色を3Dで確認することができます。表示している範囲内でデータがある年次には、スライダー上で赤または青の目盛が付いています（表示されていない場合はブラウザで何度か再読み込みしてください）。赤は指定した期間中のもの、青はそれ以外のものです。地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、見たい地域・時代のデータを表示するようにしてください。リスト上の地域・時代をクリックすると、その場所にジャンプして、データの詳細を確認できます。</p>
     <p>これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真をもとにして作成したものです。精度はそれほど高くはありませんので、実際とは大きく景色が異なることもあります。ご利用の際はご注意ください。</p>
     <br/>
     <p>作成者：桐村　喬（京都産業大学）</p>
