@@ -91,7 +91,16 @@
         text-align: center;
         line-height: 0.5em;
       }
-
+      
+      #closeInfoButton {
+        background-color: #eaeaea;
+        padding: 5px;
+        width: 50px;
+        text-align: center;
+        height: 1em;
+        cursor: pointer;
+      }
+      
     </style>
 
     <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
@@ -129,7 +138,7 @@
             id: "b39d0eb8e29f4729918e6d84eddfcaf3"
           }
         });
-        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
+//        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
         
         let initUrl = new URL(window.location.href);
         let params = initUrl.searchParams;
@@ -532,7 +541,7 @@
             "地域: " + attr.areaName + "<br/>" + 
             "年次: " + addJapaneseYear(attr.year) + "<br/>" +
             "公開日: " + datestr + "<br/>" +
-            "レイヤー: <a href=\"https://www.arcgis.com/home/item.html?id=" + attr.id + "\">" + attr.title + "</a>";
+            "レイヤー: <a href=\"https://www.arcgis.com/home/item.html?id=" + attr.id + "\" target=\"_blank\">" + attr.title + "</a>";
           return div;
         }
 
@@ -786,6 +795,7 @@
         function closeInfoDialog() {
           infoDialogExpand.expanded = false;
         }
+        document.getElementById("informationDialog").focus();
         
         function addJapaneseYear(year) {
           // 和暦変換（1920～）
@@ -898,12 +908,12 @@
     <div id="informationDialog">
     <h2>Landscape Time Machine</h2>
     <div>
-    <p>このアプリからは、桐村が公開しているさまざまな地域・時代の3Dデータを見ることができます。下のスライダーを使って、見たい時代を絞り込んでください。赤い範囲枠が表示されているところにズームすると、その時代の街並みや景色を3Dで確認することができます。表示している範囲内でデータがある年次には、スライダー上で赤または青の目盛が付いています（表示されていない場合はブラウザで何度か再読み込みしてください）。赤は指定した期間中のもの、青はそれ以外のものです。地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、見たい地域・時代のデータを表示するようにしてください。リスト上の地域・時代をクリックすると、その場所にジャンプして、データの詳細を確認できます。</p>
+    <p>このアプリからは、桐村が公開しているさまざまな地域・時代の3Dデータを見ることができます。下のスライダーを使って、見たい時代を絞り込んでください。赤い範囲枠が表示されているところにズームすると、その時代の街並みや景色を3Dで確認することができます。表示している地域内でデータがある年次には、スライダー上で赤または青の目盛が付いています。赤は指定した期間中のもの、青はそれ以外のものです。地域によってはいくつかの時代の3Dデータがありますので、右上のリスト上のチェックボックスを外して表示/非表示を切り替えて、見たい地域・時代のデータを表示するようにしてください。リスト上の地域・時代をクリックすると、その場所にジャンプして、データの詳細を確認できます。</p>
     <p>これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真をもとにして作成したものです。精度はそれほど高くはありませんので、実際とは大きく景色が異なることもあります。ご利用の際はご注意ください。</p>
     <br/>
     <p>作成者：桐村　喬（京都産業大学）</p>
     <br/>
-    <calcite-button id="closeInfoButton">閉じる</calcite-button>
+    <calcite-label id="closeInfoButton">閉じる</calcite-label>
     </div>
     </div>
     <div id="sharingUrlDialog">
