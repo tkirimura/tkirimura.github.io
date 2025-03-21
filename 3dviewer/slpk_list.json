@@ -38,6 +38,8 @@
 {"id":"fcb2336101b04d5a9d1194ab9470e507","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1946tiledmodel/SceneServer","year":1946,"title":"otsu1946tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
 {"id":"cabb62b217ff4134bcbe2440bd1e7eb2","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu1975tiledmodel/SceneServer","year":1975,"title":"otsu1975tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
 {"id":"3a85575c14f64263a0d50830a510b003","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/otsu2020tiledmodel/SceneServer","year":2020,"title":"otsu2020tiledmodel","area":"滋賀県大津市","publishdate":"2025/03/08"},
-{"id":"c6f95bef679b4e02896bff2273efff3d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/koza1977_tiledmodel_v2/SceneServer","year":1977,"title":"koza1977_tiledmodel_v2","area":"沖縄県沖縄市","publishdate":"2025/03/13"}
+{"id":"c6f95bef679b4e02896bff2273efff3d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/koza1977_tiledmodel_v2/SceneServer","year":1977,"title":"koza1977_tiledmodel_v2","area":"沖縄県沖縄市","publishdate":"2025/03/13"},
+{"id":"049f93c1bbdc445abc0eff98e35fdf26","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/matsumoto2011tiledmodel_contrast/SceneServer","year":2011,"title":"matsumoto2011tiledmodel_contrast","area":"長野県松本市","publishdate":"2025/03/21"},
+{"id":"b67d2e99ef234b63be7c09371fd8c10f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/matsumoto1975tiledmodel_contrast/SceneServer","year":1975,"title":"matsumoto1975tiledmodel_contrast","area":"長野県松本市","publishdate":"2025/03/21"}
 ]
 }
