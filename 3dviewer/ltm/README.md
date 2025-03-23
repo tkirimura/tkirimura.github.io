@@ -1,12 +1,14 @@
-# Landscape Time Machineの使い方
-![初期画面](./images/default_screen.png)
+# Landscape Time Machine
+![1975年の大阪駅周辺の3D](./images/ltm_osaka1975.png)
+[Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=15084108.72&y=4125934.27&z=1200.91&h=196.90&t=58.59&from=1974-01-01&to=2020-12-31)
 ## Landscape Time Machineとは
-　このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS技術）を使って作成しており、ArcGIS Online上に公開しているものです。
+　このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS）を使って作成しており、ArcGIS Online上に公開しているものです。
 
 ## データの出典
 　3Dデータは、国土地理院の[地図・空中写真閲覧サービス](https://mapps.gsi.go.jp/maplibSearch.do#1)で公開されている、400dpiの空中写真を用いて作成しています。このアプリ自体は、[ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)と、[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)を使用して作成しています。
 
 ## 操作方法
+　こちらからアクセスできます。 [Landscape Time Machine](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html)
 ### 初期画面
 ![操作画面の説明](./images/default_screen_tools.png)
 #### A. このアプリについて
@@ -40,4 +42,4 @@
 　これらの3Dデータの精度はそれほど高くはありません。タワー状の建物などは表示されていない場合がありますし、実際の形状とは大きく異なることがあります。また、グラウンドやソーラーパネル、水面など、フォトグラメトリという手法の限界から、本来の形状と大きく異なってしまっているものもあります。その時点で実際に見えた景色かどうかはわかりません。ご利用の際はご注意ください。
 
 ## 作成者について
-桐村　喬（京都産業大学）
+桐村　喬（京都産業大学） [X(Twitter)](https://x.com/tkirimura)
