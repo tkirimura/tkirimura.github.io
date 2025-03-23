@@ -1,4 +1,4 @@
-# Landscape Time Machineの使い方（作成中）
+# Landscape Time Machineの使い方
 ![初期画面](./images/default_screen.png)
 ## Landscape Time Machineとは
 　このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS技術）を使って作成しており、ArcGIS Online上に公開しているものです。
