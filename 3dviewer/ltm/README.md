@@ -5,7 +5,7 @@
 　このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS）を使って作成しており、ArcGIS Online上に公開しているものです。
 
 ## データの出典
-　3Dデータは、国土地理院の[地図・空中写真閲覧サービス](https://mapps.gsi.go.jp/maplibSearch.do#1)で公開されている、400dpiの空中写真を用いて作成しています。このアプリ自体は、[ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)と、[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)を使用して作成しています。
+　3Dデータは、国土地理院の[地図・空中写真閲覧サービス](https://service.gsi.go.jp/map-photos/app/map?search=photo)で公開されている、400dpiの空中写真を用いて作成しています。このアプリ自体は、[ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)と、[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)を使用して作成しています。
 
 ## 操作方法
 　こちらからアクセスできます。 [Landscape Time Machine](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html)
@@ -43,3 +43,22 @@
 
 ## 作成者について
 桐村　喬（京都産業大学） [X(Twitter)](https://x.com/tkirimura)
+
+## ギャラリー
+![1995年の神戸市長田区御蔵通周辺](./images/gallery_ltm_kobe199503_mikuradori.jpg)
+1995年の神戸市長田区御蔵通周辺 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=15046566.15&y=4118814.22&z=501.69&h=257.63&t=60.89&from=1990-01-01&to=2000-12-31))
+
+![1977年の那覇市](./images/gallery_ltm_naha1977.jpg)
+1977年の那覇市 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=14211704.33&y=3024066.76&z=942.31&h=50.28&t=61.31&from=1972-01-01&to=1982-12-31))
+
+![1977年の横浜市](./images/gallery_ltm_yokohama1977.jpg)
+1977年の横浜市 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=15542339.88&y=4225854.92&z=404.41&h=109.85&t=72.69&from=1973-01-01&to=1983-12-31))
+
+![1930年ごろの日比谷公園](./images/gallery_ltm_tokyo1930.jpg)
+1930年ごろの日比谷公園 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=15558081.91&y=4254710.09&z=435.04&h=342.24&t=64.01&from=1927-01-01&to=1937-12-31))
+
+![1982年の津市](./images/gallery_ltm_tsu1982.jpg)
+1982年の津市 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=15198085.36&y=4128422.73&z=510.64&h=243.22&t=63.58&from=1979-01-01&to=1989-12-31))
+
+![2021年の高松市](./images/gallery_ltm_takamatsu2021.jpg)
+2021年の高松市 ([Landscape Time Machineで見る](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html?x=14923424.63&y=4077639.00&z=849.93&h=209.75&t=64.48&from=2016-01-01&to=2026-12-31))
