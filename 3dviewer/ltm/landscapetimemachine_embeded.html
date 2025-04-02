@@ -1,0 +1,939 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta property="og:title" content="Landscape Time Machine" />
+    <meta property="og:image" content="https://tkirimura.github.io/3dviewer/ltm/thumbnail_landscapetimemachine.png" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Landscape Time Machine</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #tools {
+        display: none;
+        padding: 0.5em 1em;
+      }
+
+      #time-slider {
+        position: absolute;
+        left: 5%;
+        right: 5%;
+        bottom: 20px;
+      }
+
+      #time-slider .custom-ticks10 {
+        height: 8px;
+      }
+
+      #time-slider .custom-ticks1 {
+        height: 4px;
+      }
+
+      #time-slider .custom-ticks-red {
+        height: 8px;
+        width: 3px;
+        background-color: red;
+      }
+
+      #time-slider .custom-ticks-blue {
+        height: 6px;
+        width: 3px;
+        background-color: blue;
+      }
+      
+      #mesh_layers_list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 0.5px solid gray;
+        max-height: 40vh;
+        overflow-y: scroll;
+      }
+      
+      #mesh_layers_list li {
+        border-bottom: 0.5px solid gray;
+        cursor: pointer;
+      }
+
+      .layerlist-ckb {
+        margin: 3px;
+        padding: 3px;
+      }
+
+      #informationDialog {
+        width: 400px;
+        max-height: 40vh;
+        min-height: 50px;
+        padding: 0.5em 1em;
+        overflow-y: auto;
+      }
+      
+      #informationDialog p{
+        text-indent: 1em;
+        text-align: justify;
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+
+      #informationDialog h2{
+        text-align: center;
+        line-height: 0.5em;
+      }
+      
+      #sharingUrlDialog {
+        padding: 1em;
+        text-align: center;
+        line-height: 0.5em;
+      }
+      
+      #closeInfoButton {
+        background-color: #eaeaea;
+        padding: 5px;
+        width: 50px;
+        text-align: center;
+        height: 1em;
+        cursor: pointer;
+      }
+      
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
+    <script type="module" src="https://js.arcgis.com/calcite-components/2.13.1/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/2.13.1/calcite.css" />
+    <script src="https://js.arcgis.com/4.31/"></script>
+
+    <script>
+      require([
+        "esri/config",
+        "esri/Map",
+        "esri/WebScene",
+        "esri/views/SceneView",
+        "esri/time/TimeExtent",
+        "esri/time/TimeInterval",
+        "esri/widgets/TimeSlider",
+        "esri/widgets/DirectLineMeasurement3D",
+        "esri/widgets/Expand",
+        "esri/widgets/LayerList",
+        "esri/core/reactiveUtils",
+        "esri/geometry/Polygon",
+        "esri/geometry/SpatialReference",
+        "esri/layers/IntegratedMeshLayer",
+        "esri/layers/FeatureLayer",
+        "esri/layers/support/FeatureFilter"],
+         (esriConfig, Map, WebScene, SceneView, TimeExtent, TimeInterval,
+           TimeSlider, DirectLineMeasurement3D, Expand, LayerList, reactiveUtils, Polygon, SpatialReference,
+           IntegratedMeshLayer, FeatureLayer, FeatureFilter) => { (async () => {
+        const map = new Map({
+          basemap: "topo-3d",
+          ground: "world-elevation"
+        });
+        const webscene = new WebScene({
+          portalItem: {
+            id: "b39d0eb8e29f4729918e6d84eddfcaf3"
+          }
+        });
+        esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurEog4BD34N_QVIm2UpPCJGtdVgbd7Qa3lRRpGnSyoCDeqxZgDdYi61JhV6FlHX4wlriHzk7gBapyOjaSBBesEgRA2MfDHs5dCrZXpIjtJCmzHSkFr39gRBJMPe_TUWd_c755EzXCQCRxL7bJ9tgv0kkJoBZcVDKNvxh5RiXo-IOSbnk5U9DAwxABLvmspesp3cws0OVbf0320ZnxuvllPMI.AT1_ibyUE06t";
+        
+        let initUrl = new URL(window.location.href);
+        let params = initUrl.searchParams;
+        
+        var defaultX, defaultY, defaultZ, defaultFrom, defaultTo, defaultHeading, defaultTilt, defaultEmbeded;
+        params.get('x') ? defaultX = checkCameraParams(params.get('x'), 0) : defaultX = 15081930.68;
+        params.get('y') ? defaultY = checkCameraParams(params.get('y'), 0) : defaultY = 4121119.11;
+        params.get('z') ? defaultZ = checkCameraParams(params.get('z'), 0) : defaultZ = 500000.0;
+        params.get('h') ? defaultHeading = checkCameraParams(params.get('h'), 0) : defaultHeading = 0;
+        params.get('t') ? defaultTilt = checkCameraTilt(params.get('t'),0) : defaultTilt = 0.49;
+        
+        if (params.get('from') && params.get('to')) {
+          let checkedFromTo = checkFromTo(params.get('from'), params.get('to'), "2016-01-01", "2025-12-31");
+          defaultFrom = checkedFromTo[0];
+          defaultTo = checkedFromTo[1];
+        } else {
+          defaultFrom = new Date("2016-01-01");
+          defaultTo = new Date("2025-12-31");
+        }
+        
+        params.get('e') ? defaultEmbeded = checkMode(params.get('e'), false) : defaultEmbeded = false;
+
+        function checkCameraParams(value, defaultValue) {
+          if (isFinite(value)) {
+            return value;
+          } else {
+            return defaultValue;
+          }
+        }
+        
+        function checkCameraTilt(value, defaultValue) {
+          if (isFinite(value)) {
+            let num = Number(value);
+            if (num >= 0 && num <= 180) {
+              return num;
+            } else {
+              return 0;
+            }
+          } else {
+            return defaultValue;
+          }
+        }
+        
+        function checkFromTo(fromValue, toValue, dFrom, dTo) {
+          let fDate = new Date(fromValue);
+          let tDate = new Date(toValue);
+          if (isNaN(fDate.getDate()) || isNaN(tDate.getDate())){
+            return [new Date(dFrom), new Date(dTo)];
+          } else {
+            if (tDate > fDate) {
+              return [fDate, tDate];
+            } else {
+              return [new Date(dFrom), new Date(dTo)];
+            }
+          }
+        }
+        
+        function checkMode(value, defaultValue) {
+          if (isFinite(value) && value == 1) {
+            return true;
+          } else {
+            return defaultValue;
+          }
+        }
+        
+        const view = new SceneView({
+          container: "viewDiv",
+          map: webscene,
+          camera: {
+            position: {
+              spatialReference: {
+                latestWkid: 3857,
+                wkid: 102100
+              },
+              x: defaultX,
+              y: defaultY,
+              z: defaultZ
+            },
+            heading: defaultHeading,
+            tilt: defaultTilt
+          }
+        });
+        
+        const timeSliderStart = new Date("1920-01-01");
+        const timeSliderEnd = new Date("2029-12-31");
+        
+        const tickYears = [];
+        let currentYear = timeSliderStart;
+        currentYear.setFullYear(currentYear.getFullYear() + 1);
+        while (currentYear < timeSliderEnd) {
+          tickYears.push(new Date(currentYear.getTime()));
+          currentYear.setFullYear(currentYear.getFullYear() + 1);
+        }
+        const tickYearsTicks = tickYears.map((date) => date.getTime());
+        
+        const timeSlider = new TimeSlider({
+          container: "time-slider",
+          view: view,
+          mode: "time-window",
+          fullTimeExtent: {
+            start: new Date("1920-01-01"),
+            end: new Date("2029-12-31")
+          },
+          timeExtent: {
+            start: new Date("1920-01-01"),
+            end: new Date("2029-12-31")
+          },
+          stops: {
+            interval: new TimeInterval({
+              value: 1,
+              unit: "years"
+            })
+          },
+          labelFormatFunction: (value, type, element, layout) => {
+            switch (type) {
+              case "min":
+              case "max":
+                var year = value.getFullYear();
+                element.innerText = addJapaneseYear(year);
+                break;
+              case "extent":
+                var year1 = value[1].getFullYear();
+                var year0 = value[0].getFullYear();
+                element.innerText = addJapaneseYear(year0) + "\n - \n" + addJapaneseYear(year1);
+                element.style.textAlign = "center";
+                break;
+            }
+          },
+          tickConfigs: [{
+            mode: "position",
+            values: [
+              new Date(1930, 0, 1), new Date(1940, 0, 1), new Date(1950, 0, 1), new Date(1960, 0, 1), new Date(1970, 0, 1), new Date(1980, 0, 1), new Date(1990, 0, 1), new Date(2000, 0, 1), new Date(2010, 0, 1), new Date(2020, 0, 1)
+            ].map((date) => date.getTime()),
+            labelsVisible: true,
+            labelFormatFunction: (value) => {
+              const date = new Date(value);
+              return date.getFullYear() + "年";
+            },
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks10");
+            }
+          }, {
+            mode: "position",
+            values: tickYearsTicks,
+            labelsVisible: false,
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks1");
+            }
+          }, {
+            mode: "position",
+            values: null,
+            labelsVisible: false,
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks-red");
+            }
+          }, {
+            mode: "position",
+            values: null,
+            labelsVisible: false,
+            tickCreatedFunction: (value, tickElement, labelElement) => {
+              tickElement.classList.add("custom-ticks-blue");
+            }
+          }]
+        });
+        
+        const layerlist = new LayerList({
+          view: view
+        });
+        
+        var meshLayers = [];
+        var layerInfo = [];
+        var meshLayerExtentLayer, meshLayerExtentLayer2, layerView, layerView2;
+        var queryGraphics, queryGraphics2;
+        var currentTimeExtent;
+        const meshExtents = [];
+        const jsonUrl = "https://tkirimura.github.io/3dviewer/slpk_list.json";
+        fetch(jsonUrl).then(function (data) {
+          return data.json();
+        })
+        .then(function (json) {
+          layerInfo = json;
+          for (var i = 0; i < layerInfo.layers.length; i++) {
+            var layer = new IntegratedMeshLayer({
+              url: layerInfo.layers[i].url,
+              title: layerInfo.layers[i].title,
+              opacity: 1,
+              id: layerInfo.layers[i].id,
+              copyright: "(c) Takashi Kirimura"
+            });
+            layerInfo.layers[i]["flag"] = true;
+            meshLayers.push(layer);
+            webscene.add(layer);
+          }
+
+        });
+        
+        const listNode = document.getElementById("mesh_layers_list");
+        
+        reactiveUtils.watch(
+          () => timeSlider.timeExtent, (value) => {
+            // timeExtentの値（value）をもとに表示するレイヤーを絞り込み
+            if (!timeSlider.disabled) {
+              const layerDef = meshLayerExtentLayer.definitionExpression;
+              let sy0 = layerDef.substring(8, 12);
+              let ey0 = layerDef.substring(25, 29);
+              let sy = value.start.getFullYear().toString();
+              let ey = value.end.getFullYear().toString();
+              if (sy0 != sy || ey0 != ey) {
+                setLayerVisiblity(value.start, value.end);
+                meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+                meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+                queryExtentFeatures();
+                createSharingUrl();
+                if (document.getElementById("temporal-filter-switch").checked) {
+                  currentTimeExtent = timeSlider.timeExtent;
+                }
+              }
+            }
+            
+          }
+        );
+        
+        webscene.loadAll()
+          .then(function() {
+            for (var i = 0; i < webscene.layers.length; i++) {
+              if (webscene.layers.items[i].type == "integrated-mesh") {
+                var fullExt = webscene.layers.items[i].fullExtent.extent;
+                let rings = [
+                  [fullExt.xmin, fullExt.ymin],
+                  [fullExt.xmin, fullExt.ymax],
+                  [fullExt.xmax, fullExt.ymax],
+                  [fullExt.xmax, fullExt.ymin],
+                  [fullExt.xmin, fullExt.ymin]
+                ];
+                let polygon = new Polygon({
+                  hasZ: false,
+                  hasM: false,
+                  rings: rings,
+                  spatialReference: { wkid: 4326 }
+                });
+                let attr = layerInfo.layers.find((l) => l.url === webscene.layers.items[i].url);
+                let meshExtent = {
+                  geometry: polygon,
+                  attributes: {
+                    ObjectID: i+1,
+                    id: attr.id,
+                    url: webscene.layers.items[i].url,
+                    year: attr.year,
+                    title: webscene.layers.items[i].title,
+                    areaName: attr.area,
+                    publishdate: attr.publishdate,
+                    flag: 0
+                  }
+                }
+                meshExtents.push(meshExtent);
+              }
+            }
+    
+            const renderer = {
+              type: "simple",
+              symbol: {
+                type: "polygon-3d",
+                symbolLayers: [{
+                  type: "extrude",
+                  material: {
+                    color: [255, 255, 255, 0.0]
+                  },
+                  edges: {
+                    type: "solid",
+                    color: "red",
+                    size: 1.5
+                  },
+                  size: 1000
+                }]
+              }
+            }
+
+            const renderer2 = {
+              type: "simple",
+              symbol: {
+                type: "polygon-3d",
+                symbolLayers: [{
+                  type: "extrude",
+                  material: {
+                    color: [255, 255, 255, 0.0]
+                  },
+                  edges: {
+                    type: "solid",
+                    color: "blue",
+                    size: 0.8
+                  },
+                  size: 1000
+                }]
+              }
+            }
+    
+            meshLayerExtentLayer = new FeatureLayer({
+              fields: [
+              {
+                name: "ObjectID",
+                alias: "ObjectID",
+                type: "oid"
+              }, {
+                name: "id",
+                alias: "id",
+                type: "string"
+              }, {
+                name: "url",
+                alias: "url",
+                type: "string"
+              }, {
+                name: "year",
+                alias: "year",
+                type: "integer"
+              }, {
+                name: "title",
+                alias: "title",
+                type: "string"
+              }, {
+                name: "areaName",
+                alias: "areaName",
+                type: "string"
+              }, {
+                name: "publishdate",
+                alias: "publishdate",
+                type: "date"
+              }, {
+                name: "flag",
+                alias: "flag",
+                type: "integer"
+              }],
+              objectIdField: "ObjectID",
+              geometryType: "polygon",
+              title: "LayerExtents",
+              spatialReference: { wkid: 4326 },
+              source: meshExtents,
+              renderer: renderer,
+              popupEnabled: true,
+              popupTemplate: {
+                title: "{areaName}:{year}年",
+                content: popupContent
+              }
+            });
+            
+            meshLayerExtentLayer2 = new FeatureLayer({
+              fields: [
+              {
+                name: "ObjectID",
+                alias: "ObjectID",
+                type: "oid"
+              }, {
+                name: "id",
+                alias: "id",
+                type: "string"
+              }, {
+                name: "url",
+                alias: "url",
+                type: "string"
+              }, {
+                name: "year",
+                alias: "year",
+                type: "integer"
+              }, {
+                name: "title",
+                alias: "title",
+                type: "string"
+              }, {
+                name: "areaName",
+                alias: "areaName",
+                type: "string"
+              }, {
+                name: "publishdate",
+                alias: "publishdate",
+                type: "date"
+              }, {
+                name: "flag",
+                alias: "flag",
+                type: "integer"
+              }],
+              objectIdField: "ObjectID",
+              geometryType: "polygon",
+              title: "LayerExtents_notDisplayed",
+              spatialReference: { wkid: 4326 },
+              source: meshExtents,
+              renderer: renderer2
+            });
+            
+
+            let tExt = timeSlider.timeExtent;
+            tExt.start = defaultFrom; //new Date("2016-01-01");
+            tExt.end = defaultTo; //new Date("2025-12-31");
+            setLayerVisiblity(tExt.start, tExt.end);
+            var sy = tExt.start.getFullYear().toString();
+            var ey = tExt.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            webscene.add(meshLayerExtentLayer2);
+            webscene.add(meshLayerExtentLayer);
+            queryExtentFeatures();
+            createSharingUrl();
+            if (defaultEmbeded) {
+              let event0 = new Event("calciteSwitchChange");
+              document.getElementById("extent-layer-switch").checked = false;
+              document.getElementById("extent-layer-switch").dispatchEvent(event0);
+            }
+
+        });
+
+        function popupContent(feature) {
+          const div = document.createElement("div");
+          const attr = feature.graphic.attributes;
+          const datestr = new Date(attr.publishdate).toLocaleDateString("ja-JP", {year: "numeric", month: "2-digit", day: "2-digit"})
+          div.innerHTML = 
+            "地域: " + attr.areaName + "<br/>" + 
+            "年次: " + addJapaneseYear(attr.year) + "<br/>" +
+            "公開日: " + datestr + "<br/>" +
+            "レイヤー: <a href=\"https://www.arcgis.com/home/item.html?id=" + attr.id + "\" target=\"_blank\">" + attr.title + "</a>";
+          return div;
+        }
+
+        reactiveUtils.when(
+          () => view?.stationary === true,
+          async () => {
+            //  表示範囲内のフィーチャを取得する
+            queryExtentFeatures();
+            createSharingUrl();
+          }
+        );
+        
+        function createSharingUrl() {
+          const urlHtml = document.getElementById("sharingUrl");
+          const cam = view.camera;
+          let outHtml;
+          outHtml = initUrl.protocol + "//" + initUrl.host + initUrl.pathname;
+          outHtml += "?x=" + cam.position.x.toFixed(2).toString() + "&y=" + cam.position.y.toFixed(2).toString() + "&z=" + cam.position.z.toFixed(2).toString();
+          outHtml += "&h=" + cam.heading.toFixed(2).toString() + "&t=" + cam.tilt.toFixed(2).toString();
+          
+          if (!timeSlider.disabled) {
+            const tExt = timeSlider.timeExtent;
+            const timeS = tExt.start;
+            const timeE = tExt.end;
+            outHtml += "&from=" + timeS.getFullYear().toString() + "-01-01";
+            outHtml += "&to=" + timeE.getFullYear().toString() + "-12-31";
+          } else {
+            const tExt = timeSlider.fullTimeExtent;
+            const timeS = tExt.start;
+            const timeE = tExt.end;
+            outHtml += "&from=" + timeS.getFullYear().toString() + "-01-01";
+            outHtml += "&to=" + timeE.getFullYear().toString() + "-12-31";
+          }
+          urlHtml.value = outHtml;
+        }
+        
+        function copySharingUrl() {
+          const urlHtml = document.getElementById("sharingUrl");
+          if (!navigator.clipboard) {
+            console.log("This browser is not supported.");
+            return;
+          }
+          navigator.clipboard.writeText(urlHtml.value);
+        }
+        
+        function queryExtentFeatures() {
+          try {
+            let query =  meshLayerExtentLayer.createQuery();
+            query.geometry = view.visibleArea;
+            query.spatialRelationship = "intersects";
+            query.returnGeometry = true;
+            query.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
+            query.orderByFields = ["areaName", "year"];
+            
+            meshLayerExtentLayer.queryFeatures(query).then(function(results){
+              const fragment = document.createDocumentFragment();
+              queryGraphics = results.features;
+              
+              const dataTicks1 = [];
+
+              queryGraphics.forEach((result, index) => {
+                const attributes = result.attributes;
+                const name = attributes.areaName;
+                const year = attributes.year;
+                const layerLabel = document.createTextNode(" " + name + ":" + addJapaneseYear(year));
+
+                const li = document.createElement("li");
+                li.classList.add("panel-result");
+                li.tabIndex = 0;
+                li.setAttribute("data-result-id", index);
+                li.textContent = "";
+                
+                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+                const lInfo = layerInfo.layers.find((l) => l.id === attributes.id);
+                // チェックボックスを追加する
+                const calciteCkb = document.createElement("calcite-checkbox");
+                lInfo.flag == true ? calciteCkb.checked = true: calciteCkb.checked = false;
+                calciteCkb.id = "layer-check_" + index.toString();
+                calciteCkb.setAttribute("layerid", attributes.id);
+                calciteCkb.addEventListener("calciteCheckboxChange", setMeshLayerOpacity);
+                calciteCkb.classList.add("layerlist-ckb");
+                li.appendChild(calciteCkb);
+                li.appendChild(layerLabel);
+
+                fragment.appendChild(li);
+
+                dataTicks1.push(new Date(lInfo.year, 0, 1));
+
+              });
+              listNode.innerHTML = "";
+              listNode.appendChild(fragment);
+              
+              let tickConfigs1 = {
+                mode: "position",
+                values: dataTicks1.map((date) => date.getTime()),
+                labelsVisible: false,
+                tickCreatedFunction: (value, tickElement, labelElement) => {
+                  tickElement.classList.add("custom-ticks-red");
+                }
+              }
+              timeSlider.tickConfigs[2] = tickConfigs1;
+              timeSlider.renderNow();
+              
+            });
+
+            let query2 =  meshLayerExtentLayer2.createQuery();
+            query2.geometry = view.visibleArea;
+            query2.spatialRelationship = "intersects";
+            query2.returnGeometry = true;
+            query2.outFields = [ "title", "year", "areaName", "id", "publishdate", "flag" ];
+            query2.orderByFields = ["areaName", "year"];
+            meshLayerExtentLayer2.queryFeatures(query2).then(function(results){
+              queryGraphics2 = results.features;
+
+              const dataTicks2 = [];
+
+              queryGraphics2.forEach((result, index) => {
+                const attributes = result.attributes;
+                const mlayer = webscene.layers.items.find((l) => l.id === attributes.id);
+                dataTicks2.push(new Date(attributes.year, 0, 1));
+              });
+
+              let tickConfigs2 = {
+                mode: "position",
+                values: dataTicks2.map((date) => date.getTime()),
+                labelsVisible: false,
+                tickCreatedFunction: (value, tickElement, labelElement) => {
+                  tickElement.classList.add("custom-ticks-blue");
+                }
+              }
+              timeSlider.tickConfigs[3] = tickConfigs2;
+              timeSlider.renderNow();
+
+            });
+
+          } catch {
+            console.log("layer is not loaded yet");
+          }
+        }
+        
+        document
+          .getElementById("temporal-filter-switch")
+          .addEventListener("calciteSwitchChange", updateTimeEnabled);
+
+        function updateTimeEnabled(event) {
+          if (!event.target.checked) {
+            currentTimeExtent = timeSlider.timeExtent;
+            setLayerVisiblity(timeSlider.fullTimeExtent.start, timeSlider.fullTimeExtent.end);
+            var sy = timeSlider.fullTimeExtent.start.getFullYear().toString();
+            var ey = timeSlider.fullTimeExtent.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            queryExtentFeatures();
+          }
+          
+          timeSlider.disabled = !event.target.checked;
+          view.timeExtent = event.target.checked
+            ? new TimeExtent({
+              start: currentTimeExtent.start,
+              end: currentTimeExtent.end
+            })
+            : null;
+
+          createSharingUrl();
+
+          if (event.target.checked) {
+            setLayerVisiblity(currentTimeExtent.start, currentTimeExtent.end);
+            var sy = currentTimeExtent.start.getFullYear().toString();
+            var ey = currentTimeExtent.end.getFullYear().toString();
+            meshLayerExtentLayer.definitionExpression = "year >= " + sy + " AND year <= " + ey;
+            meshLayerExtentLayer2.definitionExpression = "year < " + sy + " OR year > " + ey;
+            queryExtentFeatures();
+          }
+        }
+
+        document
+          .getElementById("extent-layer-switch")
+          .addEventListener("calciteSwitchChange", setMeshLayerVisiblity);
+
+        function setMeshLayerVisiblity(event) {
+          const target = event.target;
+          if (target.checked) {
+            meshLayerExtentLayer2.visible = true;
+            meshLayerExtentLayer.visible = true;
+          } else {
+            meshLayerExtentLayer2.visible = false;
+            meshLayerExtentLayer.visible = false;
+          }
+        }
+
+        function setMeshLayerOpacity(event) {
+          const target = event.target
+          const layerId = target.getAttribute("layerid");
+          const mlayer = webscene.layers.items.find((l) => l.id === layerId);
+          const lInfo = layerInfo.layers.find((l) => l.id === layerId);
+          if (target.checked) {
+            mlayer.visible = true;
+            lInfo.flag = true;
+          } else {
+            mlayer.visible = false;
+            lInfo.flag = false;
+          }
+        }
+
+        view.ui.add("tools", "top-right");
+        document.getElementById("tools").style.display = "block";
+
+        const measurementWidget = new DirectLineMeasurement3D({
+          container: document.createElement("div"),
+          view: view
+        });
+        
+        const measurementWidgetExpand = new Expand({
+          expandIcon: "measure",
+          view: view,
+          content: measurementWidget,
+          expandTooltip: "計測",
+          closeOnEsc: false
+        });
+        view.ui.add(measurementWidgetExpand, "top-left");
+
+        reactiveUtils.when(
+          () => measurementWidgetExpand?.expanded === false,
+          async () => {
+            measurementWidget.viewModel.clear();
+          }
+        );
+
+        const urlDialogExpand = new Expand({
+          expandIcon: "share",
+          view: view,
+          content: document.getElementById("sharingUrlDialog"),
+          expandTooltip: "URLの共有"
+        });
+        view.ui.add(urlDialogExpand, "top-left");
+        document.getElementById("sharingUrlCopy").addEventListener("click", copySharingUrl);
+
+        const infoDialogExpand = new Expand({
+          expandIcon: "information",
+          view: view,
+          content: document.getElementById("informationDialog"),
+          expandTooltip: "このアプリについて",
+          expanded: true
+        });
+        view.ui.add(infoDialogExpand, "top-left");
+        document.getElementById("closeInfoButton").addEventListener("click", closeInfoDialog);
+        function closeInfoDialog() {
+          infoDialogExpand.expanded = false;
+        }
+        document.getElementById("informationDialog").focus();
+
+        if (defaultEmbeded) {
+          infoDialogExpand.expanded = false;
+          timeSlider.visible = false;
+        }
+        
+        function addJapaneseYear(year) {
+          // 和暦変換（1920～）
+          // 大正 9　1920
+          // 大正15/昭和元　1926
+          // 昭和64/平成元　1989
+          // 平成31/令和元　2019
+          var yearText = "";
+          switch (true) {
+            case 1920 <= year && year <= 1925:
+              yearText = year.toString() + "/大正" + (year - 1911).toString() + "年";
+              break;
+            case year == 1926:
+              yearText = year.toString() + "/大正15/昭和元年";
+              break;
+            case 1927 <= year && year <= 1988:
+              yearText = year.toString() + "/昭和" + (year - 1925).toString() + "年";
+              break;
+            case year == 1989:
+              yearText = year.toString() + "/昭和64/平成元年";
+              break;
+            case 1990 <= year && year <= 2018:
+              yearText = year.toString() + "/平成" + (year - 1988).toString() + "年";
+              break;
+            case year == 2019:
+              yearText = year.toString() + "/平成31/令和元年";
+              break;
+            default:
+              yearText = year.toString() + "/令和" + (year - 2018).toString() + "年";
+              break;
+          }
+          return yearText;
+        }
+        
+        function setLayerVisiblity(start, end) {
+          const year0 = start.getFullYear();
+          const year1 = end.getFullYear();
+          
+          const targetLayers = layerInfo.layers.filter((l) => {
+            if (year0 <= l.year && l.year <= year1 ) {
+              return true;
+            }
+          });
+          
+          const loadedLayers = webscene.layers;
+          for (var i = 0; i < loadedLayers.length; i++) {
+            if (loadedLayers.items[i].type == "integrated-mesh") {
+              const lInfo = targetLayers.find((l) => l.url === loadedLayers.items[i].url);
+              if (lInfo) {
+                loadedLayers.items[i].visible = lInfo.flag;
+              } else {
+                loadedLayers.items[i].visible = false;
+              }
+            }
+          }
+        }
+        
+        const onListClickHandler = async (event) => {
+          const target = event.target;
+          const resultId = target.getAttribute("data-result-id");
+
+          const result = resultId && queryGraphics && queryGraphics[parseInt(resultId, 10)];
+
+          if (result) {
+            try {
+              await view.goTo(result.geometry.extent.expand(2));
+
+              view.openPopup({
+                features: [result],
+                location: result.geometry.centroid
+              });
+            } catch (error) {
+              if (error.name != "AbortError") {
+                console.error(error);
+              }
+            }
+          }
+        };
+        
+        listNode.addEventListener("click", onListClickHandler);
+        
+        })();
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="tools" class="esri-widget">
+        <h2>Landscape Time Machine</h2>
+        <div class="temporal-filter">
+          <calcite-label slot="heading" layout="inline">
+            <calcite-switch id="extent-layer-switch" checked></calcite-switch> 範囲枠の表示 / Display Extent
+          </calcite-label>
+          <calcite-label slot="heading" layout="inline">
+            <calcite-switch id="temporal-filter-switch" checked></calcite-switch> 期間の絞り込み / Temporal Filter
+          </calcite-label>
+        </div>
+        <ul id="mesh_layers_list">
+        </ul>
+        <p>(c) Takashi Kirimura</p>
+      </div>
+    </div>
+    <div id="time-slider"></div>
+    <div id="informationDialog">
+    <h2>Landscape Time Machine</h2>
+    <div>
+    <p>このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS）を使って作成しており、ArcGIS Online上に公開しているものです。このアプリの使い方の詳細は<a href="https://tkirimura.github.io/3dviewer/ltm/" target="_blank">こちら</a>から確認してください。
+    <p>これらの3Dデータの精度はそれほど高くはありません。フォトグラメトリという手法の限界から、本来の形状と大きく異なってしまっているものもあります。ご利用の際はご注意ください。</p>
+    <br/>
+    <p>作成者：桐村　喬（京都産業大学）</p>
+    <br/>
+    <calcite-label id="closeInfoButton">閉じる</calcite-label>
+    </div>
+    </div>
+    <div id="sharingUrlDialog">
+      <p>現在の表示範囲・期間・視点のURL</p>
+      <calcite-input value="" id="sharingUrl" read-only>
+        <div slot="action">
+          <calcite-button id="sharingUrlCopy" icon-start="copy-to-clipboard"></calcite-button>
+        </div>
+      </calcite-input>
+      <calcite-tooltip reference-element="sharingUrlCopy">クリップボードにコピー</calcite-tooltip>
+    </div>
+  </body>
+</html>
