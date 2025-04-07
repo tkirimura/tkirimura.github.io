@@ -548,7 +548,7 @@
             webscene.add(meshLayerExtentLayer);
             queryExtentFeatures();
             createSharingUrl();
-            if (defaultEmbeded) {
+            if (defaultEmbeded || defaultInfoClose) {
               let event0 = new Event("calciteSwitchChange");
               document.getElementById("extent-layer-switch").checked = false;
               document.getElementById("extent-layer-switch").dispatchEvent(event0);
