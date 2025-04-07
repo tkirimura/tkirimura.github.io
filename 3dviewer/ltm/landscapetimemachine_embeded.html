@@ -143,7 +143,7 @@
         let initUrl = new URL(window.location.href);
         let params = initUrl.searchParams;
         
-        var defaultX, defaultY, defaultZ, defaultFrom, defaultTo, defaultHeading, defaultTilt, defaultEmbeded, defaultInfoOpen;
+        var defaultX, defaultY, defaultZ, defaultFrom, defaultTo, defaultHeading, defaultTilt, defaultEmbeded, defaultInfoClose;
         params.get('x') ? defaultX = checkCameraParams(params.get('x'), 0) : defaultX = 15081930.68;
         params.get('y') ? defaultY = checkCameraParams(params.get('y'), 0) : defaultY = 4121119.11;
         params.get('z') ? defaultZ = checkCameraParams(params.get('z'), 0) : defaultZ = 500000.0;
@@ -160,7 +160,7 @@
         }
         
         params.get('e') ? defaultEmbeded = checkMode(params.get('e'), false) : defaultEmbeded = false;
-        params.get('i') ? defaultInfoOpen = checkInfoOpen(params.get('i'), false) : defaultInfoOpen = false;
+        params.get('i') ? defaultInfoClose = checkInfoClose(params.get('i'), false) : defaultInfoClose = false;
 
         function checkCameraParams(value, defaultValue) {
           if (isFinite(value)) {
@@ -205,7 +205,7 @@
           }
         }
 
-        function checkInfoOpen(value, defaultValue) {
+        function checkInfoClose(value, defaultValue) {
           if (isFinite(value) && value == 1) {
             return true;
           } else {
@@ -819,6 +819,10 @@
         if (defaultEmbeded) {
           infoDialogExpand.expanded = false;
           timeSlider.visible = false;
+        }
+        
+        if (defaultInfoClose) {
+          infoDialogExpand.expanded = false;
         }
         
         function addJapaneseYear(year) {
