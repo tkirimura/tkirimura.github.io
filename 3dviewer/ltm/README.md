@@ -5,7 +5,7 @@
 　このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS）を使って作成しており、ArcGIS Online上に公開しているものです。
 
 ## データの出典
-　3Dデータは、国土地理院の[地図・空中写真閲覧サービス](https://service.gsi.go.jp/map-photos/app/map?search=photo)で公開されている、400dpiの空中写真を用いて作成しています。このアプリ自体は、[ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)と、[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)を使用して作成しています。
+　3Dデータは、国土地理院の[地図・空中写真閲覧サービス](https://service.gsi.go.jp/map-photos/app/map?search=photo)で公開されている、400dpiの空中写真を用いて作成しています。このアプリ自体は、[ArcGIS Maps SDK for JavaScript](https://developers.arcgis.com/javascript/latest/)と、[Calcite Design System](https://developers.arcgis.com/calcite-design-system/)を使用して作成しています。また、PLATEAUの3Dモデルについては、国土交通省がProject PLATEAUで公開するデータのうち、Esriジャパンがシーンレイヤーとして公開しているものを表示しています。
 
 ## 操作方法
 　こちらからアクセスできます。 [Landscape Time Machine](https://tkirimura.github.io/3dviewer/ltm/landscapetimemachine.html)
@@ -16,7 +16,7 @@
 #### B. 期間の絞り込みスライダー
 　画面に表示する、3Dデータの期間を指定するためのスライダーです。Cの操作パネルで「期間の絞り込み」がオンのときに有効になります。スライダー上の赤い目盛は、現在表示している地域内で、3Dデータがある年次を示しています。青い目盛は、スライダーの期間の範囲外の3Dデータがある年次を示します。3Dマップ内でも、赤い範囲枠が赤い目盛の3Dデータの範囲を、青い範囲枠が青い目盛の3Dデータの範囲をそれぞれ示しています。
 #### C. 操作パネル
-　赤・青の範囲枠の表示／非表示の切り替えと、期間の絞り込みスライダーの有効／無効の切り替えボタンがあり、現在表示している地域内で、スライダーの期間中の3Dデータの一覧も表示されます。3Dデータの一覧のチェックボックスをオフにすると、3Dマップ上でその3Dデータが非表示になります。また、リスト上の3Dデータの名前（地域・年次）をクリックすると、3Dデータの範囲にズームし、3Dデータの詳細を示したポップアップが表示されます。
+　赤・青の範囲枠の表示／非表示の切り替えと、期間の絞り込みスライダーの有効／無効の切り替えボタンがあり、現在表示している地域内で、スライダーの期間中の3Dデータの一覧も表示されます。3Dデータの一覧のチェックボックスをオフにすると、3Dマップ上でその3Dデータが非表示になります。また、リスト上の3Dデータの名前（地域・年次）をクリックすると、3Dデータの範囲にズームし、3Dデータの詳細を示したポップアップが表示されます。また、Esriジャパンが公開している、PLATEAUの3Dモデルを表示することもできます（一部地域のみ）。
 #### D. ツール
 <img alt="拡大" src="./images/tool_zoomin.png" width="18px"> 3Dマップの表示範囲を拡大（ズームイン）します。マウスのホイールでも操作できます。\
 <img alt="縮小" src="./images/tool_zoomout.png" width="18px"> 3Dマップの表示範囲を縮小（ズームアウト）します。マウスのホイールでも操作できます。\
