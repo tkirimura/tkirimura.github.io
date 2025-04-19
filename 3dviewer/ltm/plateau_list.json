@@ -1,3 +1,5 @@
+{"layers":
+[
 {"id":"ca7baa183c6e4c998a668a6fadc5fc49","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/13100_13201_Tokyo-23ku_Minamiosawa_Building/SceneServer","year":2021,"title":"東京都23区・八王子市南大沢 3D都市モデル（Project PLATEAU）"},
 {"id":"8f3c9a01ef1d4d9db2cffb7cb40ad36c","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/14100_Yokohama_shi_Building/SceneServer","year":2021,"title":"横浜市 3D都市モデル（Project PLATEAU）"},
 {"id":"c23e83a243a24c50b87232aaa2555628","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/27100_Osaka_shi_Building/SceneServer","year":2021,"title":"大阪市 3D都市モデル（Project PLATEAU）"},
@@ -7,3 +9,5 @@
 {"id":"27e0c9a9b6eb4e1cb3428f9f0dd73082","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/37201_takamatsu_building/SceneServer","year":2022,"title":"高松市 3D都市モデル（Project PLATEAU）"},
 {"id":"3744eb9fbc284555a037a4739a2cca06","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/27100_osaka_building/SceneServer","year":2022,"title":"大阪市 3D都市モデル（Project PLATEAU）"},
 {"id":"5643e018c3734dbab2791f581e4b63f0","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/04100_sendai_building/SceneServer","year":2022,"title":"仙台市 3D都市モデル（Project PLATEAU）"}
+]
+}
