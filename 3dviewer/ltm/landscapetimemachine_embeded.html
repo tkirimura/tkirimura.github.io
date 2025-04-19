@@ -124,12 +124,12 @@
         "esri/geometry/Polygon",
         "esri/geometry/SpatialReference",
         "esri/layers/IntegratedMeshLayer",
-        "esri/layers/IntegratedMesh3DTilesLayer",
+        "esri/layers/SceneLayer",
         "esri/layers/FeatureLayer",
         "esri/layers/support/FeatureFilter"],
          (esriConfig, Map, WebScene, SceneView, TimeExtent, TimeInterval,
            TimeSlider, DirectLineMeasurement3D, Expand, LayerList, reactiveUtils, Polygon, SpatialReference,
-           IntegratedMeshLayer, IntegratedMesh3DTilesLayer, FeatureLayer, FeatureFilter) => { (async () => {
+           IntegratedMeshLayer, SceneLayer, FeatureLayer, FeatureFilter) => { (async () => {
         const map = new Map({
           basemap: "topo-3d",
           ground: "world-elevation"
@@ -209,14 +209,6 @@
           }
         }
 
-//        function checkInfoOpen(value, defaultValue) {
-//          if (isFinite(value) && value == 0) {
-//            return false;
-//          } else {
-//            return defaultValue;
-//          }
-//        }
-        
         const view = new SceneView({
           container: "viewDiv",
           map: webscene,
@@ -356,10 +348,11 @@
         .then(function (json) {
           layerInfoPlateau = json;
           for (var i = 0; i < layerInfoPlateau.layers.length; i++) {
-            var layer = new IntegratedMesh3DTilesLayer({
+            var layer = new SceneLayer({
               url: layerInfoPlateau.layers[i].url,
               title: layerInfoPlateau.layers[i].title,
-              id: layerInfoPlateau.layers[i].id
+              id: layerInfoPlateau.layers[i].id,
+              visible: false
             });
             layerInfoPlateau.layers[i]["flag"] = true;
             meshLayers.push(layer);
@@ -579,12 +572,6 @@
               document.getElementById("extent-layer-switch").dispatchEvent(event0);
             }
             
-//            if (defaultEmbeded || defaultInfoClose) {
-//              let event0 = new Event("calciteSwitchChange");
-//              document.getElementById("extent-layer-switch").checked = false;
-//              document.getElementById("extent-layer-switch").dispatchEvent(event0);
-//            }
-
         });
 
         function popupContent(feature) {
@@ -808,16 +795,11 @@
           const target = event.target;
           const loadedLayers = webscene.layers;
           for (var i = 0; i < loadedLayers.length; i++) {
-            if (loadedLayers.items[i].type == "integrated-mesh-3dtiles") {
+            if (loadedLayers.items[i].type == "scene") {
               loadedLayers.items[i].visible = target.checked;
-              if (target.checked) {
-                console.log(loadedLayers.items[i].id);
-              }
             }
           }
         }
-
-
 
         view.ui.add("tools", "top-right");
         document.getElementById("tools").style.display = "block";
@@ -864,12 +846,6 @@
         function closeInfoDialog() {
           infoDialogExpand.expanded = false;
         }
-//        document.getElementById("informationDialog").focus();
-
-//        if (defaultEmbeded) {
-//          infoDialogExpand.expanded = false;
-//          timeSlider.visible = false;
-//        }
 
         if (defaultInfoOpen) {
           infoDialogExpand.expanded = true;
