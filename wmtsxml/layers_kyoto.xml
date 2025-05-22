@@ -11,7 +11,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/meisai_hasegawa/{TileMatrix}/{TileCol}/{-TileRow}.png"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/meisai_hasegawa/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
 <Layer>
 <ows:Title>淡色地図</ows:Title>
@@ -35,7 +35,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z2to18</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/meisai_sougou/{TileMatrix}/{TileCol}/{-TileRow}.png"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/meisai_sougou/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
 <Layer>
 <ows:Title>English</ows:Title>
@@ -59,7 +59,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/s28/{TileMatrix}/{TileCol}/{TileRow}.png?flipY=true"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/s28/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
       
 <TileMatrixSet>   
