@@ -26,8 +26,8 @@
 <ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/pale/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
 <Layer>
-<ows:Title>白地図</ows:Title>
-<ows:Identifier>blank</ows:Identifier>
+<ows:Title>昭和2年頃京都市明細図(長谷川家版)</ows:Title>
+<ows:Identifier>meisai_sougou</ows:Identifier>
 <Style isDefault="true">
 <ows:Identifier>default</ows:Identifier>
 </Style>
@@ -35,7 +35,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z2to18</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/blank/{TileMatrix}/{TileCol}/{TileRow}.png"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/meisai_sougou/{TileMatrix}/{TileCol}/{-TileRow}.png"/>
 </Layer>
 <Layer>
 <ows:Title>English</ows:Title>
