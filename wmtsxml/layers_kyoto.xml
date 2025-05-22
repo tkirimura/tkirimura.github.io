@@ -47,7 +47,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/english/{TileMatrix}/{TileCol}/{TileRow}.png?flipY=true"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/english/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
 <Layer>
 <ows:Title>昭和28年(都市計画)</ows:Title>
@@ -59,7 +59,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/jpeg" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/s28/{TileMatrix}/{TileCol}/{TileRow}.jpg"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/s28/{TileMatrix}/{TileCol}/{TileRow}.png?flipY=true"/>
 </Layer>
       
 <TileMatrixSet>   
