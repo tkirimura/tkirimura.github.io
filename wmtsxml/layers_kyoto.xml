@@ -26,7 +26,7 @@
 <ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/pale/{TileMatrix}/{TileCol}/{TileRow}.png"/>
 </Layer>
 <Layer>
-<ows:Title>昭和2年頃京都市明細図(長谷川家版)</ows:Title>
+<ows:Title>昭和26年頃京都市明細図(総合資料館版)</ows:Title>
 <ows:Identifier>meisai_sougou</ows:Identifier>
 <Style isDefault="true">
 <ows:Identifier>default</ows:Identifier>
@@ -47,11 +47,11 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/english/{TileMatrix}/{TileCol}/{TileRow}.png"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://maps.gsi.go.jp/xyz/english/{TileMatrix}/{TileCol}/{TileRow}.png?flipY=true"/>
 </Layer>
 <Layer>
-<ows:Title>写真</ows:Title>
-<ows:Identifier>ort</ows:Identifier>
+<ows:Title>昭和28年(都市計画)</ows:Title>
+<ows:Identifier>s28</ows:Identifier>
 <Style isDefault="true">
 <ows:Identifier>default</ows:Identifier>
 </Style>
@@ -59,7 +59,7 @@
 <TileMatrixSetLink>
 <TileMatrixSet>z0to20</TileMatrixSet>
 </TileMatrixSetLink>
-<ResourceURL format="image/jpeg" resourceType="tile" template="https://maps.gsi.go.jp/xyz/seamlessphoto/{TileMatrix}/{TileCol}/{TileRow}.jpg"/>
+<ResourceURL format="image/jpeg" resourceType="tile" template="https://www.arc.ritsumei.ac.jp/archive01/theater/image/PB/geo/maps/s28/{TileMatrix}/{TileCol}/{TileRow}.jpg"/>
 </Layer>
       
 <TileMatrixSet>   
