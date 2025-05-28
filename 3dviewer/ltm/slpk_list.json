@@ -44,6 +44,9 @@
 {"id":"39ff517b777d4725a50271b16e2c6777","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise1961_63v2_tiledmodel_wgs/SceneServer","year":1961,"title":"ise1961_63v2_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"},
 {"id":"d91c8524a1044bff97c72edce6621815","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise1975v3_tiledmodel_wgs/SceneServer","year":1975,"title":"ise1975v3_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"},
 {"id":"68b1a7a49a1045c59f0964e0271a1c61","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise1983v3_tiledmodel_wgs/SceneServer","year":1983,"title":"ise1983v3_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"},
-{"id":"23dc2843abb34f5b9b4a04976230a9dc","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise2020v3_tiledmodel_wgs/SceneServer","year":2020,"title":"ise2020v3_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"}
+{"id":"23dc2843abb34f5b9b4a04976230a9dc","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise2020v3_tiledmodel_wgs/SceneServer","year":2020,"title":"ise2020v3_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"},
+{"id":"9c50a74919fd4853bfab3a07a3f3a7bb","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ashibetsu1977tiledmodel_wgs/SceneServer","year":1977,"title":"ashibetsu1977tiledmodel_wgs","area":"北海道芦別市","publishdate":"2025/05/29"},
+{"id":"e41bc0b39c6241b29521e23d0c1d7b71","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ashibetsu2009tiledmodel_wgs/SceneServer","year":2009,"title":"ashibetsu2009tiledmodel_wgs","area":"北海道芦別市","publishdate":"2025/05/29"},
+{"id":"4bc6cc24daf44b4fba04f370746d2ec7","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/suita1975_tiledmodel_wgs/SceneServer","year":1975,"title":"suita1975_tiledmodel_wgs","area":"大阪府吹田市","publishdate":"2025/05/29"}
 ]
 }
