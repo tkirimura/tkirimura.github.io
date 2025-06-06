@@ -811,7 +811,7 @@
           expandIcon: "measure",
           view: view,
           content: measurementWidget,
-          expandTooltip: "Measure",
+          expandTooltip: "Measurement Tool",
           closeOnEsc: false
         });
         view.ui.add(measurementWidgetExpand, "top-left");
@@ -854,11 +854,6 @@
         }
         
         function addJapaneseYear(year) {
-          // 和暦変換（1920～）
-          // 大正 9　1920
-          // 大正15/昭和元　1926
-          // 昭和64/平成元　1989
-          // 平成31/令和元　2019
           var yearText = "";
           switch (true) {
             case 1920 <= year && year <= 1925:
@@ -962,8 +957,8 @@
     <div id="informationDialog">
     <h2>Landscape Time Machine</h2>
     <div>
-    <p>このアプリからは、日本のいくつかの都市・地域のさまざまな時代の街並み、景色の3Dデータを見ることができます。これらの3Dデータは、国土地理院が地図・空中写真閲覧サービスで公開している空中写真データからフォトグラメトリ（SfM-MVS）を使って作成しており、ArcGIS Online上に公開しているものです。このアプリの使い方の詳細は<a href="https://tkirimura.github.io/3dviewer/ltm/" target="_blank">こちら</a>から確認してください。
-    <p>これらの3Dデータの精度はそれほど高くはありません。フォトグラメトリという手法の限界から、本来の形状と大きく異なってしまっているものもあります。ご利用の際はご注意ください。</p>
+    <p>This app allows you to view 3D data of various eras of cityscapes and landscapes in several cities and regions of Japan. These 3D data were created using photogrammetry (SfM-MVS) from aerial photo data publicly available through the Geospatial Information Authority of Japan's Map and Aerial Photo Viewing Service, and are published on ArcGIS Online. For detailed instructions on how to use this app, please click <a href="https://tkirimura.github.io/3dviewer/ltm/" target="_blank">here</a>.</p>
+    <p>The accuracy of this 3D data is not particularly high. Due to the limitations of the photogrammetry technique, some data may differ significantly from the original shapes. Please use this data with caution.</p>
     <br/>
     <p>Takashi Kirimura, Kyoto Sangyo University</p>
     <br/>
