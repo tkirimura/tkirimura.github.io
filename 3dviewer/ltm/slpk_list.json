@@ -47,6 +47,8 @@
 {"id":"23dc2843abb34f5b9b4a04976230a9dc","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ise2020v3_tiledmodel_wgs/SceneServer","year":2020,"title":"ise2020v3_tiledmodel_wgs","area":"三重県伊勢市","publishdate":"2025/04/20"},
 {"id":"9c50a74919fd4853bfab3a07a3f3a7bb","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ashibetsu1977tiledmodel_wgs/SceneServer","year":1977,"title":"ashibetsu1977tiledmodel_wgs","area":"北海道芦別市","publishdate":"2025/05/29"},
 {"id":"e41bc0b39c6241b29521e23d0c1d7b71","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ashibetsu2009tiledmodel_wgs/SceneServer","year":2009,"title":"ashibetsu2009tiledmodel_wgs","area":"北海道芦別市","publishdate":"2025/05/29"},
-{"id":"4bc6cc24daf44b4fba04f370746d2ec7","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/suita1975_tiledmodel_wgs/SceneServer","year":1975,"title":"suita1975_tiledmodel_wgs","area":"大阪府吹田市","publishdate":"2025/05/29"}
+{"id":"4bc6cc24daf44b4fba04f370746d2ec7","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/suita1975_tiledmodel_wgs/SceneServer","year":1975,"title":"suita1975_tiledmodel_wgs","area":"大阪府吹田市","publishdate":"2025/05/29"},
+{"id":"d032f3e5699b4210a602960c8ebe7316","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe1976_tiledmodel/SceneServer","year":1976,"title":"kiitanabe1976_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"},
+{"id":"8ee40dfbf40b46d7bdbfde1c5a6b7391","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe2017_tiledmodel/SceneServer","year":2017,"title":"kiitanabe2017_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"}
 ]
 }
