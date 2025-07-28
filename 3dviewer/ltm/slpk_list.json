@@ -49,6 +49,7 @@
 {"id":"e41bc0b39c6241b29521e23d0c1d7b71","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/ashibetsu2009tiledmodel_wgs/SceneServer","year":2009,"title":"ashibetsu2009tiledmodel_wgs","area":"北海道芦別市","publishdate":"2025/05/29"},
 {"id":"4bc6cc24daf44b4fba04f370746d2ec7","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/suita1975_tiledmodel_wgs/SceneServer","year":1975,"title":"suita1975_tiledmodel_wgs","area":"大阪府吹田市","publishdate":"2025/05/29"},
 {"id":"d032f3e5699b4210a602960c8ebe7316","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe1976_tiledmodel/SceneServer","year":1976,"title":"kiitanabe1976_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"},
-{"id":"8ee40dfbf40b46d7bdbfde1c5a6b7391","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe2017_tiledmodel/SceneServer","year":2017,"title":"kiitanabe2017_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"}
+{"id":"8ee40dfbf40b46d7bdbfde1c5a6b7391","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe2017_tiledmodel/SceneServer","year":2017,"title":"kiitanabe2017_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"},
+{"id":"907e08cf999c4c35b759cea2302b5c5d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1988_tiledmodel/SceneServer","year":1988,"title":"toyohashi1988_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/28"}
 ]
 }
