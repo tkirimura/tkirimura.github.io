@@ -52,6 +52,7 @@
 {"id":"8ee40dfbf40b46d7bdbfde1c5a6b7391","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kiitanabe2017_tiledmodel/SceneServer","year":2017,"title":"kiitanabe2017_tiledmodel","area":"和歌山県田辺市","publishdate":"2025/07/14"},
 {"id":"907e08cf999c4c35b759cea2302b5c5d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1988_tiledmodel/SceneServer","year":1988,"title":"toyohashi1988_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/28"},
 {"id":"9f43e5fd25b7460c9076def923b6b7b6","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi2020_tiledmodel/SceneServer","year":2020,"title":"toyohashi2020_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/29"},
-{"id":"1778034a25cc47d8baa447123e5d60ba","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1977_tiledmodel/SceneServer","year":1977,"title":"toyohashi1977_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/31"}
+{"id":"1778034a25cc47d8baa447123e5d60ba","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1977_tiledmodel/SceneServer","year":1977,"title":"toyohashi1977_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/31"},
+{"id":"40192c348c3349c5bafefcb6aea76093","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/tosashimizu2019_tiledmodel/SceneServer","year":2019,"title":"tosashimizu2019_tiledmodel","area":"高知県土佐清水市","publishdate":"2025/08/15"}
 ]
 }
