@@ -1,0 +1,265 @@
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Simply Rising Sea Level Simulator</title>
+
+    <script type="module" src="https://js.arcgis.com/calcite-components/3.2.1/calcite.esm.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/3.2.1/calcite.css" />
+    <link rel="stylesheet" href="https://js.arcgis.com/4.33/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.33/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+
+      #tools {
+        display: none;
+        padding: 0.5em 1em;
+        width: 300px;
+      }
+      
+    </style>
+
+    <script>
+      require(["esri/config",
+               "esri/Map",
+               "esri/core/reactiveUtils",
+               "esri/views/SceneView",
+               "esri/layers/GraphicsLayer",
+               "esri/Graphic",
+               "esri/layers/IntegratedMeshLayer"], (
+        esriConfig,
+        Map,
+        reactiveUtils,
+        SceneView,
+        GraphicsLayer,
+        Graphic,
+        IntegratedMeshLayer
+      ) => {
+        var layerInfo = [];
+        var meshLayers = [];
+        var meshLayer;
+        esriConfig.apiKey = "AAPKdc2fa97c3fe344ada7049e6ce714f70fCAHKJunevev7EbraWWQcQXYeQ4R_La1DMv2czIGuKC431BX5ebgKN4hk_iq75BwR";
+        const map = new Map({
+          basemap: "hybrid"
+        });
+
+        const view = new SceneView({
+          container: "viewDiv",
+          map: map,
+
+          camera: {
+            position: {
+              x: 136.04,
+              y: 33.73,
+              z: 1500.00
+            },
+            heading: 265.00,
+            tilt: 63.00
+          }
+        });
+
+        view.ui.add("tools", "top-right");
+        document.getElementById("tools").style.display = "block";
+
+        const graphicsLayer = new GraphicsLayer();
+        const waterLayerInfo = {
+          mode: "absolute-height",
+          offset: 0,
+          unit: "meters"
+        };
+        graphicsLayer.elevationInfo = waterLayerInfo;
+        graphicsLayer.screenSizePerspectiveEnabled = false;
+
+        const fillSymbol = {
+          type: "polygon-3d",
+          symbolLayers: [{
+            type: "water",
+            waveDirection: 180,
+            color: [0, 104, 136, 0.75],
+            waveStrength: "moderate",
+            waterbodySize: "large"
+          }]
+        };
+        // 5975a3
+//        const fillSymbol = {
+//          type: "simple-fill",
+//          color: [79, 209, 255, 0.5],
+//          outline: null
+//        };
+
+        const meshLayersDropdown = document.getElementById("meshLayersDropdown");
+        
+        const jsonUrl = "https://tkirimura.github.io/3dviewer/ltm/slpk_list.json";
+        fetch(jsonUrl).then(function (data) {
+          return data.json();
+        })
+        .then(function (json) {
+          layerInfo = json;
+          for (var i = 0; i < layerInfo.layers.length; i++) {
+            var layer = new IntegratedMeshLayer({
+              url: layerInfo.layers[i].url,
+              title: layerInfo.layers[i].title,
+              opacity: 1,
+              id: layerInfo.layers[i].id,
+              visible: false,
+              copyright: "(c) Takashi Kirimura"
+            });
+            layerInfo.layers[i]["flag"] = true;
+            meshLayers.push(layer);
+            map.add(layer);
+            map.removeAll();
+            dropdownItem = document.createElement("calcite-dropdown-item");
+            dropdownItem.innerText = layerInfo.layers[i].area + " " + layerInfo.layers[i].year + "年";
+            meshLayersDropdown.children[1].appendChild(dropdownItem);
+          }
+
+          // default layer: Shingu 2019
+          items = meshLayersDropdown.children[1].children;
+          for (var i = 0; i < items.length; i++ ) {
+            if (layerInfo.layers[i].id == "c5841620e5814dbfa235697ba0b72d14") {
+              items[i].selected = true;
+              document.getElementById("meshLayersDropdownButton").innerText = layerInfo.layers[i].area + " " + layerInfo.layers[i].year + "年";
+              map.add(meshLayers[i]);
+              meshLayer = meshLayers[i];
+              meshLayer.visible = true;
+            }
+          }
+          map.add(graphicsLayer);
+
+        });
+
+        meshLayersDropdown.addEventListener("calciteDropdownSelect", (event) => {
+          items = meshLayersDropdown.children[1].children;
+          for (var i = 0; i < items.length; i++ ) {
+            if (items[i].selected) {
+              document.getElementById("meshLayersDropdownButton").innerText = layerInfo.layers[i].area + " " + layerInfo.layers[i].year + "年";
+              map.removeAll();
+              map.add(meshLayers[i]);
+              graphicsLayer.removeAll();
+              showFloodWaterButton.innerText = "水面の表示";
+              map.add(graphicsLayer);
+              meshLayer = meshLayers[i];
+              meshLayer.visible = true;
+              const mLayerExtent = meshLayer.fullExtent;
+              let centX = (mLayerExtent.xmax + mLayerExtent.xmin) / 2.0;
+              let centY = (mLayerExtent.ymax + mLayerExtent.ymin) / 2.0;
+              view.goTo({
+                center: [centX, centY],
+                heading: 0,
+                tilt: 0,
+                speedFactor: 1.5,
+                zoom: 13
+              });
+            }
+          }
+        });
+
+        const showFloodWaterButton = document.getElementById("showFloodWater");
+        showFloodWaterButton.addEventListener("click", (event) => {
+          const floodDepth = document.getElementById("floodDepth").value;
+          let geom = createPolygonRing2(meshLayer.fullExtent, floodDepth);
+          const polygon = {
+            type: "polygon",
+            rings: geom
+          };
+          graphicsLayer.removeAll();
+          const waterPolygon = new Graphic({
+            geometry: polygon,
+            symbol: fillSymbol
+          });
+          graphicsLayer.add(waterPolygon);
+        });
+        
+        const hideFloodWaterButton = document.getElementById("hideFloodWater");
+        hideFloodWaterButton.addEventListener("click", (event) => {
+          graphicsLayer.removeAll();
+          showFloodWaterButton.innerText = "水面の表示";
+        });
+        
+        const floodDepthSlider = document.getElementById("floodDepth");
+        floodDepthSlider.addEventListener("calciteSliderChange", (event) => {
+          if (graphicsLayer.graphics.length > 0) showFloodWaterButton.innerText = "水面の更新";
+        });
+
+        function createPolygonRing(extent, elevation) {
+          let ring = [
+            [extent.xmin, extent.ymin, elevation],
+            [extent.xmin, extent.ymax, elevation],
+            [extent.xmax, extent.ymax, elevation],
+            [extent.xmax, extent.ymin, elevation],
+            [extent.xmin, extent.ymin, elevation]
+          ];
+          return ring;
+        }
+
+        function createPolygonRing2(extent, elevation) {
+          const xExt = extent.xmax - extent.xmin;
+          const yExt = extent.ymax - extent.ymin;
+          let rings = [];
+          for (var i = 0; i < 50; i++ ){
+            var x0 = extent.xmin + (xExt / 50.0) * i;
+            var x1 = extent.xmin + (xExt / 50.0) * (i + 1);
+            for (var j = 0; j < 50; j++ ){
+              var y0 = extent.ymin + (yExt / 50.0) * j;
+              var y1 = extent.ymin + (yExt / 50.0) * (j + 1);
+              let ring = [
+                [x0, y0, elevation],
+                [x0, y1, elevation],
+                [x1, y1, elevation],
+                [x1, y0, elevation],
+                [x0, y0, elevation]
+              ];
+              rings.push(ring);
+            }
+          }
+          return rings;
+        }
+
+        
+
+
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv">
+      <div id="tools" class="esri-widget">
+        <p>簡易海面上昇シミュレーション</p>
+        <calcite-label>地域・年次</calcite-label>
+        <calcite-dropdown width="l" id="meshLayersDropdown">
+          <calcite-button slot="trigger" id="meshLayersDropdownButton">地域・年次の選択</calcite-button>
+          <calcite-dropdown-group selection-mode="single" group-title="レイヤー">
+          </calcite-dropdown-group>
+        </calcite-dropdown>
+        <p>水面の高さ（m）</p>
+        <calcite-slider
+         id="floodDepth"
+         name="floodDepth"
+         value="3"
+         min="0"
+         max="100"
+         label-ticks
+         label-handles
+        ></calcite-slider>
+        <button id="showFloodWater" class="esri-button esri-button--secondary esri-button--half">水面の表示</button>
+        <br />
+        <br />
+        <button id="hideFloodWater" class="esri-button esri-button--secondary esri-button--half">水面を隠す</button>
+        <br />
+        <br />
+        ※実際の浸水範囲とは大きく異なる場合があります.<br /><br />
+        (c) Takashi Kirimura
+        <br />
+      </div>
+    </div>
+  </body>
+</html>
