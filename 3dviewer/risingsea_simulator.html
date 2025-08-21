@@ -140,6 +140,9 @@
           items = meshLayersDropdown.children[1].children;
           for (var i = 0; i < items.length; i++ ) {
             if (items[i].selected) {
+              const mLayerExtent0 = meshLayer.fullExtent;
+              let centX0 = (mLayerExtent0.xmax + mLayerExtent0.xmin) / 2.0;
+              let centY0 = (mLayerExtent0.ymax + mLayerExtent0.ymin) / 2.0;
               document.getElementById("meshLayersDropdownButton").innerText = layerInfo.layers[i].area + " " + layerInfo.layers[i].year + "年";
               map.removeAll();
               map.add(meshLayers[i]);
@@ -151,13 +154,15 @@
               const mLayerExtent = meshLayer.fullExtent;
               let centX = (mLayerExtent.xmax + mLayerExtent.xmin) / 2.0;
               let centY = (mLayerExtent.ymax + mLayerExtent.ymin) / 2.0;
-              view.goTo({
-                center: [centX, centY],
-                heading: 0,
-                tilt: 0,
-                speedFactor: 1.5,
-                zoom: 13
-              });
+              if (Math.abs(centX - centX0) > 0.1 || Math.abs(centY - centY0) > 0.1) {
+                view.goTo({
+                  center: [centX, centY],
+                  heading: 0,
+                  tilt: 0,
+                  speedFactor: 1.5,
+                  zoom: 13
+                });
+              }
             }
           }
         });
