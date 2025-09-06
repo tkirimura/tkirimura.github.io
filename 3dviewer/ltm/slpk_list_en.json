@@ -53,6 +53,8 @@
 {"id":"907e08cf999c4c35b759cea2302b5c5d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1988_tiledmodel/SceneServer","year":1988,"title":"toyohashi1988_tiledmodel","area":"Toyohashi","publishdate":"2025/07/28"},
 {"id":"9f43e5fd25b7460c9076def923b6b7b6","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi2020_tiledmodel/SceneServer","year":2020,"title":"toyohashi2020_tiledmodel","area":"Toyohashi","publishdate":"2025/07/29"},
 {"id":"1778034a25cc47d8baa447123e5d60ba","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1977_tiledmodel/SceneServer","year":1977,"title":"toyohashi1977_tiledmodel","area":"Toyohashi","publishdate":"2025/07/31"},
-{"id":"40192c348c3349c5bafefcb6aea76093","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/tosashimizu2019_tiledmodel/SceneServer","year":2019,"title":"tosashimizu2019_tiledmodel","area":"Tosashimizu","publishdate":"2025/08/15"}
+{"id":"40192c348c3349c5bafefcb6aea76093","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/tosashimizu2019_tiledmodel/SceneServer","year":2019,"title":"tosashimizu2019_tiledmodel","area":"Tosashimizu","publishdate":"2025/08/15"},
+{"id":"c05f2444dd854d0eb2c1b3561815dd4f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku1947_tiledmodel/SceneServer","year":1947,"title":"shinjuku1947_tiledmodel","area":"Shinjuku, Tokyo","publishdate":"2025/09/06"},
+{"id":"6d08595f680f415eb4caed664433653f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku2019_tiledmodel/SceneServer","year":2019,"title":"shinjuku2019_tiledmodel","area":"Shinjuku, Tokyo","publishdate":"2025/09/06"}
 ]
 }
