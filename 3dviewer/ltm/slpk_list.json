@@ -55,6 +55,6 @@
 {"id":"1778034a25cc47d8baa447123e5d60ba","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyohashi1977_tiledmodel/SceneServer","year":1977,"title":"toyohashi1977_tiledmodel","area":"愛知県豊橋市","publishdate":"2025/07/31"},
 {"id":"40192c348c3349c5bafefcb6aea76093","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/tosashimizu2019_tiledmodel/SceneServer","year":2019,"title":"tosashimizu2019_tiledmodel","area":"高知県土佐清水市","publishdate":"2025/08/15"},
 {"id":"c05f2444dd854d0eb2c1b3561815dd4f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku1947_tiledmodel/SceneServer","year":1947,"title":"shinjuku1947_tiledmodel","area":"東京都新宿区","publishdate":"2025/09/06"},
-{"id":"6fcf153a0d3f448fa58b306356d779d8","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku2019_tiledmodel/SceneServer","year":2019,"title":"shinjuku2019_tiledmodel","area":"東京都新宿区","publishdate":"2025/09/07"}
+{"id":"1a76d2f6cad143a9a735dc4e99690744","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku2019_tiledmodel_contrast/SceneServer","year":2019,"title":"shinjuku2019_tiledmodel_contrast","area":"東京都新宿区","publishdate":"2025/09/07"}
 ]
 }
