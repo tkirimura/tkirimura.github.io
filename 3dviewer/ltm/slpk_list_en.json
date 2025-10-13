@@ -57,6 +57,7 @@
 {"id":"c05f2444dd854d0eb2c1b3561815dd4f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku1947_tiledmodel/SceneServer","year":1947,"title":"shinjuku1947_tiledmodel","area":"Shinjuku, Tokyo","publishdate":"2025/09/06"},
 {"id":"1a76d2f6cad143a9a735dc4e99690744","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/shinjuku2019_tiledmodel_contrast/SceneServer","year":2019,"title":"shinjuku2019_tiledmodel_contrast","area":"Shinjuku, Tokyo","publishdate":"2025/09/07"},
 {"id":"122eab287245455991bf1c4cb10e2109","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyama1975_tiledmodel/SceneServer","year":1975,"title":"toyama1975_tiledmodel","area":"Toyama","publishdate":"2025/09/22"},
-{"id":"532feba970bf49968c620133e254181a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyama2021_tiledmodel/SceneServer","year":2021,"title":"toyama2021_tiledmodel","area":"Toyama","publishdate":"2025/09/22"}
+{"id":"532feba970bf49968c620133e254181a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyama2021_tiledmodel/SceneServer","year":2021,"title":"toyama2021_tiledmodel","area":"Toyama","publishdate":"2025/09/22"},
+{"id":"77ac56c0fb9e4696a1723887057931df","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kyoto1975_tiledmodel_v3/SceneServer","year":1975,"title":"kyoto1975_tiledmodel_v3","area":"Kyoto","publishdate":"2025/10/13"}
 ]
 }
