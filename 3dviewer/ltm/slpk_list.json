@@ -59,6 +59,7 @@
 {"id":"122eab287245455991bf1c4cb10e2109","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyama1975_tiledmodel/SceneServer","year":1975,"title":"toyama1975_tiledmodel","area":"富山県富山市","publishdate":"2025/09/22"},
 {"id":"532feba970bf49968c620133e254181a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/toyama2021_tiledmodel/SceneServer","year":2021,"title":"toyama2021_tiledmodel","area":"富山県富山市","publishdate":"2025/09/22"},
 {"id":"77ac56c0fb9e4696a1723887057931df","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kyoto1975_tiledmodel_v3/SceneServer","year":1975,"title":"kyoto1975_tiledmodel_v3","area":"京都府京都市","publishdate":"2025/10/13"},
-{"id":"895b305b28264f1fab774ba666c94ca8","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa1975_tiledmodel/SceneServer","year":1975,"title":"kanazawa1975_tiledmodel","area":"石川県金沢市","publishdate":"2025/11/03"}
+{"id":"895b305b28264f1fab774ba666c94ca8","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa1975_tiledmodel/SceneServer","year":1975,"title":"kanazawa1975_tiledmodel","area":"石川県金沢市","publishdate":"2025/11/03"},
+{"id":"69df778f43084599befa0c0e6d515b44","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa2024_tiledmodel/SceneServer","year":2024,"title":"kanazawa2024_tiledmodel","area":"石川県金沢市","publishdate":"2025/11/05"}
 ]
 }
