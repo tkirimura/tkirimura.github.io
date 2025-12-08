@@ -62,6 +62,7 @@
 {"id":"895b305b28264f1fab774ba666c94ca8","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa1975_tiledmodel/SceneServer","year":1975,"title":"kanazawa1975_tiledmodel","area":"Kanazawa","publishdate":"2025/11/03"},
 {"id":"69df778f43084599befa0c0e6d515b44","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa2024_tiledmodel/SceneServer","year":2024,"title":"kanazawa2024_tiledmodel","area":"Kanazawa","publishdate":"2025/11/05"},
 {"id":"489f694ff65348d98b5e73df6834865b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/saganoseki2025_tiledmodel/SceneServer","year":2025,"title":"saganoseki2025_tiledmodel","area":"Oita","publishdate":"2025/11/19"},
-{"id":"dc710049c3ed49fca312a399d2465c91","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/hitachi1975_tiledmodel/SceneServer","year":1975,"title":"hitachi1975_tiledmodel","area":"Hitachi","publishdate":"2025/11/25"}
+{"id":"dc710049c3ed49fca312a399d2465c91","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/hitachi1975_tiledmodel/SceneServer","year":1975,"title":"hitachi1975_tiledmodel","area":"Hitachi","publishdate":"2025/11/25"},
+{"id":"68fbea4f1a81431c83ed3604f4df7429","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/expo2025_tiledmodel/SceneServer","year":2025,"title":"expo2025_tiledmodel","area":"Osaka","publishdate":"2025/12/08"}
 ]
 }
