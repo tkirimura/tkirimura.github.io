@@ -63,6 +63,13 @@
 {"id":"69df778f43084599befa0c0e6d515b44","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa2024_tiledmodel/SceneServer","year":2024,"title":"kanazawa2024_tiledmodel","area":"石川県金沢市","publishdate":"2025/11/05"},
 {"id":"489f694ff65348d98b5e73df6834865b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/saganoseki2025_tiledmodel/SceneServer","year":2025,"title":"saganoseki2025_tiledmodel","area":"大分県大分市","publishdate":"2025/11/19"},
 {"id":"dc710049c3ed49fca312a399d2465c91","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/hitachi1975_tiledmodel/SceneServer","year":1975,"title":"hitachi1975_tiledmodel","area":"茨城県日立市","publishdate":"2025/11/25"},
-{"id":"68fbea4f1a81431c83ed3604f4df7429","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/expo2025_tiledmodel/SceneServer","year":2025,"title":"expo2025_tiledmodel","area":"大阪府大阪市","publishdate":"2025/12/08"}
+{"id":"68fbea4f1a81431c83ed3604f4df7429","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/expo2025_tiledmodel/SceneServer","year":2025,"title":"expo2025_tiledmodel","area":"大阪府大阪市","publishdate":"2025/12/08"},
+{"id":"53ef367a6cd048c382938248aa67d254","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha1979_tiledmodel/SceneServer","year":1979,"title":"kashiwanoha1979_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"fc15b5d1e6344c639169011a08255f7c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha1984_tiledmodel/SceneServer","year":1984,"title":"kashiwanoha1984_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"8eaf1cfc4f724571af2dbd80278f9e51","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha1989_tiledmodel/SceneServer","year":1989,"title":"kashiwanoha1989_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"158bd81c205648649f59fef36d6ce55a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2008_tiledmodel/SceneServer","year":2008,"title":"kashiwanoha2008_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"9e2ad3d97d724c29bae8172c13be103d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2013_tiledmodel/SceneServer","year":2013,"title":"kashiwanoha2013_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"0b41a921f65a45428243c69d35836f2c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2019_tiledmodel/SceneServer","year":2019,"title":"kashiwanoha2019_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
+{"id":"903f58c29e934838afa1ab508e35a3ef","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2024_tiledmodel/SceneServer","year":2024,"title":"kashiwanoha2024_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"}
 ]
 }
