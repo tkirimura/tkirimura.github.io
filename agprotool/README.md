@@ -1,7 +1,8 @@
 # ArcGIS Pro用ツール
 
 ## 地理院ベクトルタイルデータの取得 (GSIVectorTiles.pyt)
-国土地理院がベクトルタイル提供実験で公開している、道路中心線、鉄道中心線、河川中心線のデータ（ズームレベル16）をダウンロードする、ArcGIS Pro用のツールです。
+国土地理院が[ベクトルタイル提供実験](https://github.com/gsi-cyberjapan/vector-tile-experiment)で公開している、道路中心線、鉄道中心線、河川中心線のデータ（ズームレベル16）をダウンロードする、ArcGIS Pro用のツールです。
+
 ![データ取得結果](./GSI_vectortiles_sample.png)
 
 ### 使い方
