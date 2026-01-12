@@ -5,6 +5,8 @@
 
 ![データ取得結果](./GSI_vectortiles_sample_v2.png)
 
+**1/12更新 地形分類データも取得できるようにしました。**
+
 ### 使い方
 1. GSIVectorTiles.pytを[ダウンロード](GSIVectorTiles.pyt)して、プロジェクトのフォルダに保存します。
 
