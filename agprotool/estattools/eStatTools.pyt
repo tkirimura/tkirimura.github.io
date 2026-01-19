@@ -20,7 +20,8 @@ class eStatPolygonToFeatureClass:
         """Define the tool (tool name is the name of the class)."""
         self.label = "e-Stat境界データの変換"
         self.description = "e-Statの統計地理情報システムの境界データのフィーチャクラスへの変換\n" \
-                           + "e-Statの統計地理情報システムで公開されている境界データをフィーチャクラスに変換するツール\n"
+                           + "e-Statの統計地理情報システムで公開されている境界データをフィーチャクラスに変換するツール\n" \
+                           + "(c) Takashi Kirimura"
 
     def getParameterInfo(self):
         """Define the tool parameters."""
@@ -148,7 +149,8 @@ class eStatToTable:
         """Define the tool (tool name is the name of the class)."""
         self.label = "e-Stat統計データの変換"
         self.description = "e-Statの統計地理情報システムの統計データのテーブルへの変換\n" \
-                           + "e-Statの統計地理情報システムで公開されている統計データをテーブルに変換するツール\n"
+                           + "e-Statの統計地理情報システムで公開されている統計データをテーブルに変換するツール\n" \
+                           + "(c) Takashi Kirimura"
 
     def getParameterInfo(self):
         """Define the tool parameters."""
