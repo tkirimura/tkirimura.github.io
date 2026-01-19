@@ -3,7 +3,7 @@
 ## e-Statデータの変換 (eStatTools.pyt)
 e-Statの[統計地理情報システム](https://www.e-stat.go.jp/gis)で公開されている、境界データをフィーチャクラスに、統計データをテーブルに、それぞれ変換する、ArcGIS Pro用のツールです。**ウェブサイトからダウンロードしたZIPファイルを展開せずに変換**することができます。
 
-![変換結果(./eStatTools_sample.png)
+![変換結果](./eStatTools_sample.png)
 
 ### 使い方
 1. eStatTools.pytを[ダウンロード](eStatTools.pyt)して、プロジェクトのフォルダに保存します。
