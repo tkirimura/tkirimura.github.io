@@ -70,6 +70,8 @@
 {"id":"158bd81c205648649f59fef36d6ce55a","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2008_tiledmodel/SceneServer","year":2008,"title":"kashiwanoha2008_tiledmodel","area":"Kashiwanoha","publishdate":"2025/12/28"},
 {"id":"9e2ad3d97d724c29bae8172c13be103d","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2013_tiledmodel/SceneServer","year":2013,"title":"kashiwanoha2013_tiledmodel","area":"Kashiwanoha","publishdate":"2025/12/28"},
 {"id":"0b41a921f65a45428243c69d35836f2c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2019_tiledmodel/SceneServer","year":2019,"title":"kashiwanoha2019_tiledmodel","area":"Kashiwanoha","publishdate":"2025/12/28"},
-{"id":"903f58c29e934838afa1ab508e35a3ef","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2024_tiledmodel/SceneServer","year":2024,"title":"kashiwanoha2024_tiledmodel","area":"Kashiwanoha","publishdate":"2025/12/28"}
+{"id":"903f58c29e934838afa1ab508e35a3ef","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2024_tiledmodel/SceneServer","year":2024,"title":"kashiwanoha2024_tiledmodel","area":"Kashiwanoha","publishdate":"2025/12/28"},
+{"id":"ba58e6fe25864fc699f6e84777e6a0aa","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata1962_tiledmodel_v2/SceneServer","year":1962,"title":"niigata1962_tiledmodel_v2","area":"Niigata","publishdate":"2026/02/18"},
+{"id":"f543885cfe4a4313b129e154b3c29fa4","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata2022_tiledmodel/SceneServer","year":2022,"title":"niigata2022_tiledmodel","area":"Niigata","publishdate":"2026/02/18"}
 ]
 }
