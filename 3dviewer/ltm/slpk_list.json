@@ -72,6 +72,9 @@
 {"id":"0b41a921f65a45428243c69d35836f2c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2019_tiledmodel/SceneServer","year":2019,"title":"kashiwanoha2019_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
 {"id":"903f58c29e934838afa1ab508e35a3ef","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kashiwanoha2024_tiledmodel/SceneServer","year":2024,"title":"kashiwanoha2024_tiledmodel","area":"千葉県柏市","publishdate":"2025/12/28"},
 {"id":"ba58e6fe25864fc699f6e84777e6a0aa","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata1962_tiledmodel_v2/SceneServer","year":1962,"title":"niigata1962_tiledmodel_v2","area":"新潟県新潟市","publishdate":"2026/02/18"},
-{"id":"f543885cfe4a4313b129e154b3c29fa4","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata2022_tiledmodel/SceneServer","year":2022,"title":"niigata2022_tiledmodel","area":"新潟県新潟市","publishdate":"2026/02/18"}
+{"id":"f543885cfe4a4313b129e154b3c29fa4","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata2022_tiledmodel/SceneServer","year":2022,"title":"niigata2022_tiledmodel","area":"新潟県新潟市","publishdate":"2026/02/18"},
+{"id":"37b895937a8f422f9ba91a2468a4008b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi1989_tiledmodel/SceneServer","year":1989,"title":"musashikosugi1989_tiledmodel","area":"神奈川県川崎市","publishdate":"2026/02/26"},
+{"id":"e466bb6efaaf4956a305135ab0637b66","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi2007_tiledmodel/SceneServer","year":2007,"title":"musashikosugi2007_tiledmodel","area":"神奈川県川崎市","publishdate":"2026/02/26"},
+{"id":"088f49a2c42e419692ac8dd9dee38c18","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi2019_tiledmodel/SceneServer","year":2019,"title":"musashikosugi2019_tiledmodel","area":"神奈川県川崎市","publishdate":"2026/02/26"}
 ]
 }
