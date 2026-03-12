@@ -75,6 +75,7 @@
 {"id":"f543885cfe4a4313b129e154b3c29fa4","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/niigata2022_tiledmodel/SceneServer","year":2022,"title":"niigata2022_tiledmodel","area":"Niigata","publishdate":"2026/02/18"},
 {"id":"37b895937a8f422f9ba91a2468a4008b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi1989_tiledmodel/SceneServer","year":1989,"title":"musashikosugi1989_tiledmodel","area":"Musashi-Kosugi","publishdate":"2026/02/26"},
 {"id":"e466bb6efaaf4956a305135ab0637b66","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi2007_tiledmodel/SceneServer","year":2007,"title":"musashikosugi2007_tiledmodel","area":"Musashi-Kosugi","publishdate":"2026/02/26"},
-{"id":"088f49a2c42e419692ac8dd9dee38c18","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi2019_tiledmodel/SceneServer","year":2019,"title":"musashikosugi2019_tiledmodel","area":"Musashi-Kosugi","publishdate":"2026/02/26"}
+{"id":"088f49a2c42e419692ac8dd9dee38c18","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/musashikosugi2019_tiledmodel/SceneServer","year":2019,"title":"musashikosugi2019_tiledmodel","area":"Musashi-Kosugi","publishdate":"2026/02/26"},
+{"id":"870a8d2a21964da8abf3c3cef020fa9b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka2007_tiledmodel_wgs/SceneServer","year":2007,"title":"osaka2007_tiledmodel_wgs","area":"Osaka","publishdate":"2026/03/12"}
 ]
 }
