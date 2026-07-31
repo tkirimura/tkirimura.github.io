@@ -79,6 +79,8 @@
 {"id":"870a8d2a21964da8abf3c3cef020fa9b","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/osaka2007_tiledmodel_wgs/SceneServer","year":2007,"title":"osaka2007_tiledmodel_wgs","area":"Osaka","publishdate":"2026/03/12"},
 {"id":"e1f46c2ea4c74dbf8e2da792278009a0","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/tokyo2009central_tiledmodel/SceneServer","year":2009,"title":"tokyo2009central_tiledmodel","area":"Tokyo","publishdate":"2026/04/22"},
 {"id":"c1348a2d0a8c41819dcb6d795bfc4133","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/momosegawa1975tiledmodel_wgs/SceneServer","year":1975,"title":"momosegawa1975tiledmodel_wgs","area":"Momose River, Shiga","publishdate":"2026/05/11"},
-{"id":"b86250be117244f4865bd9eda5b141c9","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa1946_tiledmodel/SceneServer","year":1946,"title":"kanazawa1946_tiledmodel","area":"Kanazawa","publishdate":"2026/07/01"}
+{"id":"b86250be117244f4865bd9eda5b141c9","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/kanazawa1946_tiledmodel/SceneServer","year":1946,"title":"kanazawa1946_tiledmodel","area":"Kanazawa","publishdate":"2026/07/01"},
+{"id":"adfb5da2c7c64766b218d03d046fe72f","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/yatsushiro2026_tiledmodel/SceneServer","year":2026,"title":"yatsushiro2026_tiledmodel","area":"Yatsushiro, Kumamoto","publishdate":"2026/07/31"},
+{"id":"c6bbe84f9db04dffbb73dbe4316cba2c","url":"https://tiles.arcgis.com/tiles/iy1jPW2jf66NGcGX/arcgis/rest/services/yatsushiro2016_tiledmodel/SceneServer","year":2016,"title":"yatsushiro2016_tiledmodel","area":"Yatsushiro, Kumamoto","publishdate":"2026/07/31"}
 ]
 }
