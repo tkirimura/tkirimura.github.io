@@ -14,6 +14,7 @@
 {"id":"8cb78d2728d24484a24b825daf43f7c1","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/12217_Kashiwa_shi_Building/SceneServer","year":2020,"title":"柏市 3D都市モデル（Project PLATEAU）"},
 {"id":"790a2e8175a9491286a189b1f56768a0","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/15100_Niigata_shi_Building/SceneServer","year":2020,"title":"新潟市 3D都市モデル（Project PLATEAU）"},
 {"id":"78ca9fda6d784d16804bfcca65af81b2","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/14130_kawasaki_building/SceneServer","year":2022,"title":"川崎市 3D都市モデル（Project PLATEAU）"},
-{"id":"c8856f10f8794cda82034efa52a11b97","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/23100_Nagoya_shi_Building/SceneServer","year":2021,"title":"名古屋市 3D都市モデル（Project PLATEAU）"}
+{"id":"c8856f10f8794cda82034efa52a11b97","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/23100_Nagoya_shi_Building/SceneServer","year":2021,"title":"名古屋市 3D都市モデル（Project PLATEAU）"},
+{"id":"e796137e92fd4d9e9b063188f3afd39b","url":"https://tiles.arcgis.com/tiles/wlVTGRSYTzAbjjiC/arcgis/rest/services/22205_atami_shi/SceneServer","year":2023,"title":"熱海市 3D都市モデル（Project PLATEAU）"}
 ]
 }
